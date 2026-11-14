@@ -83,7 +83,7 @@ python3 -m pip install jupyterlab
 jupyter lab
 ```
 
-Run the two linked notebooks from top to bottom. The first notebook performs the version-pinned download only if the local raw CSV is absent. Baseline model code is included in Notebook 02 but has not been executed. Cross-validation and hyperparameter tuning remain part of the next phase; no model results are reported here.
+Run the two linked notebooks from top to bottom. The first notebook performs the version-pinned download only if the local raw CSV is absent. Notebook 02 reports a preliminary comparison of Decision Tree, Random Forest, and AdaBoost on an internal validation partition; the outer test set remains untouched. Cross-validation, hyperparameter tuning, MLP training, and final test evaluation remain part of the next phase.
 
 ## Data quality and evaluation principles
 
@@ -95,4 +95,4 @@ For evaluation, keep validation and test data at the natural class prevalence. A
 
 1. Establish the business framing and the dataset's supported claims and limitations.
 2. Download and audit the dataset, recording its provenance and quality findings in Notebook 01.
-3. Prepare a reproducible duplicate-group-aware holdout and define baseline evaluation code in Notebook 02; model comparison and cross-validation remain subsequent work.
+3. Prepare a duplicate-group-aware holdout and run preliminary baselines on validation in Notebook 02; cross-validation, MLP training, and final test evaluation remain subsequent work.
