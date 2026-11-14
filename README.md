@@ -54,20 +54,36 @@ The Kaggle description reports 284,807 transactions from two days in September 2
 
 The dataset therefore supports a historical benchmark, not claims that a model is ready to protect a current financial institution. Results must be reported with these limitations.
 
-## Download
+## Learning workflow
 
-The dataset can be downloaded with [KaggleHub](https://github.com/Kaggle/kagglehub):
+Work through the notebooks in order:
 
-```python
-import kagglehub
+- [01 — Dataset understanding and EDA](notebooks/01_dataset_understanding_eda.ipynb): inspect the pinned dataset, its integrity and class imbalance, then explore univariate, bivariate, multivariate, relative-time, and outlier views.
+- [02 — Data preparation and baselines](notebooks/02_data_preparation_baselines.ipynb): compare a conventional stratified split with a duplicate-group-aware holdout, define train-only preprocessing, and provide baseline evaluation code.
 
-# Download the latest version.
-path = kagglehub.dataset_download("mlg-ulb/creditcardfraud")
+See the [EDA summary](reports/eda_summary.md) for the already-collected diagnostic findings and their limitations.
 
-print("Path to dataset files:", path)
+The notebooks use KaggleHub to retrieve dataset version 3 and copy only `creditcard.csv` into `data/raw/` when that file is not already present. The raw CSV is ignored by Git and must not be committed. Check Kaggle's usage terms before redistributing the data. KaggleHub may require account setup depending on your environment; do not store credentials in this repository.
+
+## Setup and run
+
+From the repository root, create an environment and install the pinned analysis dependencies:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install --upgrade pip
+python3 -m pip install -r requirements.txt
 ```
 
-This call downloads the latest version and returns its local path (which may be KaggleHub's cache). For reproducible results, record and use a specific dataset version when one is selected, along with the retrieval date and a checksum. Check Kaggle's usage terms before redistributing the data. The raw dataset should not be committed to this repository; commit the code and documentation needed to retrieve and audit it instead.
+Install a notebook interface separately, then start it from the repository root:
+
+```bash
+python3 -m pip install jupyterlab
+jupyter lab
+```
+
+Run the two linked notebooks from top to bottom. The first notebook performs the version-pinned download only if the local raw CSV is absent. Baseline model code is included in Notebook 02 but has not been executed. Cross-validation and hyperparameter tuning remain part of the next phase; no model results are reported here.
 
 ## Data quality and evaluation principles
 
@@ -78,5 +94,5 @@ For evaluation, keep validation and test data at the natural class prevalence. A
 ## Current scope
 
 1. Establish the business framing and the dataset's supported claims and limitations.
-2. Download and audit the dataset, recording its provenance and quality findings.
-3. Define an evaluation protocol before model comparison.
+2. Download and audit the dataset, recording its provenance and quality findings in Notebook 01.
+3. Prepare a reproducible duplicate-group-aware holdout and define baseline evaluation code in Notebook 02; model comparison and cross-validation remain subsequent work.
