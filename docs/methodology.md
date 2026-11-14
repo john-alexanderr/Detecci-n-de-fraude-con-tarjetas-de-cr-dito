@@ -1,58 +1,58 @@
-# Methodology
+# Metodología
 
-## Dataset audit and exploratory analysis
+## Auditoría del dataset y análisis exploratorio
 
-The EDA application keeps the full downloaded source intact. Its full-source inventory cells report schema, sample rows, summary statistics, null counts, exact duplicates, and label prevalence for input-integrity review and split stratification only; these are not model-selection evidence. The grouped split is created only after an explicit button click. The app then combines the grouped model-training and validation rows into a development frame, and passes only that frame to class-conditioned plots, target associations, correlations, outlier fences, and other model-relevant EDA. Outer-test rows are not passed to those functions, and the EDA app does not report outer-test counts.
+La aplicación de EDA mantiene intacta la fuente completa descargada. Sus celdas de inventario sobre la fuente completa reportan esquema, filas de muestra, estadísticas resumidas, recuentos de nulos, duplicados exactos y prevalencia de etiquetas solo para revisar la integridad de la entrada y para la estratificación de las particiones; no son evidencia para seleccionar modelos. La partición agrupada se crea solo después de un clic explícito en un botón. Luego, la aplicación combina las filas agrupadas de entrenamiento y validación de modelos en un marco de desarrollo y pasa solo ese marco a los gráficos condicionados por clase, las asociaciones con el objetivo, las correlaciones, los límites de outliers y el resto del EDA relevante para el modelo. Las filas de la prueba externa no se pasan a esas funciones y la aplicación de EDA no reporta recuentos de la prueba externa.
 
-The preserved [EDA report](../reports/eda_summary.md) remains an exact full-source descriptive pre-model audit, including its previously recorded feature-level statistics and associations. Those historical values are retained for provenance, not used to fit transformations, select features, choose models or thresholds, or estimate performance. Plots are descriptive, not causal evidence and not a basis for automatic deletion or capping. `Time` is relative elapsed seconds, and `V1`–`V28` have no direct business interpretation.
+El [informe de EDA](../reports/eda_summary.md) conservado sigue siendo una auditoría descriptiva exacta de la fuente completa, previa al modelo, incluidos sus estadísticas y asociaciones a nivel de variable registradas anteriormente. Esos valores históricos se conservan por trazabilidad; no se usan para ajustar transformaciones, seleccionar variables, elegir modelos o umbrales, ni estimar rendimiento. Los gráficos son descriptivos, no evidencia causal ni base para eliminar o recortar valores automáticamente. `Time` son segundos transcurridos relativos y `V1`–`V28` no tienen una interpretación de negocio directa.
 
-## Group-aware partitions
+## Particiones que respetan grupos
 
-1. Hash each row's input features only; do not include `Class` in the group key.
-2. Use `StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=42)` and its first fold for the outer development/test partition.
-3. Use a second `StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=43)` and its first fold within development for model training and validation.
-4. Keep exact input-feature groups entirely within one partition at both levels. Keep all rows; do not deduplicate.
+1. Calcular un hash solo de las variables de entrada de cada fila; no incluir `Class` en la clave de grupo.
+2. Usar `StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=42)` y su primer fold para la partición externa de desarrollo/prueba.
+3. Usar un segundo `StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=43)` y su primer fold dentro de desarrollo para el entrenamiento y la validación del modelo.
+4. Mantener los grupos de variables de entrada idénticas por completo dentro de una misma partición en ambos niveles. Conservar todas las filas; no deduplicar.
 
-The current outer split has 227,845 development rows (393 frauds) and 56,962 outer-test rows (99 frauds). The inner split has 182,276 model-training rows (314 frauds) and 45,569 validation rows (79 frauds). These splits preserve approximately the natural prevalence and have no cross-partition exact-feature group overlap.
+La partición externa actual tiene 227,845 filas de desarrollo (393 fraudes) y 56,962 filas de prueba externa (99 fraudes). La partición interna tiene 182,276 filas de entrenamiento del modelo (314 fraudes) y 45,569 filas de validación (79 fraudes). Estas particiones conservan aproximadamente la prevalencia natural y no tienen superposición de grupos de variables idénticas entre particiones.
 
-For comparison, the prior conventional stratified random split had 227,845 training rows (394 frauds) and 56,962 test rows (98 frauds), but 293 distinct exact-feature signatures crossed the split. This overlap is why the retained evaluation uses grouped partitions.
+A modo de comparación, la partición aleatoria estratificada convencional anterior tenía 227,845 filas de entrenamiento (394 fraudes) y 56,962 filas de prueba (98 fraudes), pero 293 firmas distintas de variables idénticas cruzaban la partición. Esa superposición es la razón por la que la evaluación conservada usa particiones agrupadas.
 
-## Preprocessing and baselines
+## Preprocesamiento y baselines
 
-Each baseline pipeline applies **`StandardScaler -> SMOTE(random_state=42) -> classifier`**. The scaler and sampler are fitted only on the training subset; generated samples never enter validation. Validation remains at natural prevalence. The three classifiers and settings are:
+Cada pipeline de baseline aplica **`StandardScaler -> SMOTE(random_state=42) -> classifier`**. El escalador y el muestreador se ajustan solo con el subconjunto de entrenamiento; las muestras generadas nunca entran en validación. La validación se mantiene en la prevalencia natural. Los tres clasificadores y sus configuraciones son:
 
-| Classifier | Settings |
+| Clasificador | Configuración |
 | --- | --- |
 | Decision Tree | `random_state=42` |
 | Random Forest | `n_estimators=200`, `random_state=42`, `n_jobs=-1` |
 | AdaBoost | `random_state=42` |
 
-Metrics use each classifier's default prediction threshold. Average Precision is computed from validation probabilities; precision, recall, F2, and confusion matrices use `predict` output. The exact previous validation results are documented in [Baseline Validation](../reports/baseline_validation.md).
+Las métricas usan el umbral de predicción por defecto de cada clasificador. Average Precision se calcula a partir de las probabilidades de validación; la precisión, el recall, F2 y las matrices de confusión usan la salida de `predict`. Los resultados exactos de la validación anterior están documentados en [Validación de baselines](../reports/baseline_validation.md).
 
-## MLP bounded search and final evaluation
+## Búsqueda acotada del MLP y evaluación final
 
-The MLP phase is implemented in [Notebook 03](../notebooks/03_mlp_training_evaluation.py) and shares the existing deterministic grouped partitions. It combines only `x_fit` plus `x_validation`, their targets, and their feature-group IDs into development data. The 56,962-row outer test remains reserved; it is never included in cross-validation.
+La fase del MLP se implementa en el [Notebook 03](../notebooks/03_mlp_training_evaluation.py) y comparte las particiones agrupadas deterministas existentes. Combina solo `x_fit` más `x_validation`, sus objetivos y sus identificadores de grupo de variables en los datos de desarrollo. La prueba externa de 56,962 filas permanece reservada; nunca se incluye en la validación cruzada.
 
-The search uses `StratifiedGroupKFold(n_splits=3, shuffle=True, random_state=44)` and passes development group IDs to `GridSearchCV.fit`. Three folds are a bounded initial choice for the 393 development frauds, not an exhaustive search or an optimality claim. The two candidates are:
+La búsqueda usa `StratifiedGroupKFold(n_splits=3, shuffle=True, random_state=44)` y pasa los identificadores de grupo de desarrollo a `GridSearchCV.fit`. Tres folds son una elección inicial acotada para los 393 fraudes de desarrollo, no una búsqueda exhaustiva ni una afirmación de optimalidad. Los dos candidatos son:
 
-| Candidate | `hidden_layer_sizes` | `alpha` | `learning_rate_init` |
+| Candidato | `hidden_layer_sizes` | `alpha` | `learning_rate_init` |
 | --- | --- | ---: | ---: |
 | 1 | `(32,)` | `1e-3` | `1e-3` |
 | 2 | `(64, 32)` | `1e-4` | `1e-3` |
 
-Both candidates use ReLU, Adam, batch size 256, `max_iter=100`, `early_stopping=False`, and random state 42. The estimator order is **`StandardScaler -> SMOTE(random_state=42) -> MLPClassifier`** inside the cross-validation estimator. Therefore each fold fits scaling and SMOTE only on its training partition; its validation data keeps natural prevalence. Search uses `average_precision`, `refit=True`, one job, one pre-dispatched job, and `error_score="raise"` so estimator errors are visible. Mean and standard deviation of candidate fold Average Precision are reported with the fold count.
+Ambos candidatos usan ReLU, Adam, tamaño de lote 256, `max_iter=100`, `early_stopping=False` y estado aleatorio 42. El orden del estimador es **`StandardScaler -> SMOTE(random_state=42) -> MLPClassifier`** dentro del estimador de validación cruzada. Por lo tanto, cada fold ajusta el escalado y SMOTE solo con su partición de entrenamiento; sus datos de validación mantienen la prevalencia natural. La búsqueda usa `average_precision`, `refit=True`, un trabajo, un trabajo predespachado y `error_score="raise"` para que los errores del estimador sean visibles. La media y la desviación estándar del Average Precision de los folds de los candidatos se reportan junto con el número de folds.
 
-After selection, `GridSearchCV(refit=True)` fits the chosen pipeline on all development rows. The reserved outer test was evaluated once after selection: Average Precision uses `predict_proba`, while precision, recall, F2, and TN/FP/FN/TP confusion counts use default `predict` labels. No threshold tuning occurred. The test has 56,962 rows and 99 frauds, so its result is one uncertain holdout estimate with limited minority-class evidence—not production performance.
+Después de la selección, `GridSearchCV(refit=True)` ajusta el pipeline elegido con todas las filas de desarrollo. La prueba externa reservada se evaluó una vez después de la selección: Average Precision usa `predict_proba`, mientras que la precisión, el recall, F2 y los recuentos TN/FP/FN/TP de la matriz de confusión usan las etiquetas por defecto de `predict`. No hubo ajuste de umbral. La prueba tiene 56,962 filas y 99 fraudes, por lo que su resultado es una única estimación incierta sobre un holdout, con evidencia limitada de la clase minoritaria; no es rendimiento de producción.
 
-| Candidate | Mean CV Average Precision | Std. CV Average Precision | Folds |
+| Candidato | Media del Average Precision en CV | Desv. estándar del Average Precision en CV | Folds |
 | --- | ---: | ---: | ---: |
 | 1: `(32,)`, `alpha=0.001`, `learning_rate_init=0.001` | `0.7889909900343617` | `0.016266031474164548` | 3 |
 | 2: `(64, 32)`, `alpha=0.0001`, `learning_rate_init=0.001` | `0.7892942255438676` | `0.024821041864665654` | 3 |
 
-Candidate 2 was the search winner and was refit on all development data. Its mean advantage is tiny relative to fold variation, so the result does not demonstrate decisive architecture superiority. The final outer-test results were Average Precision `0.8203794692697799`, precision `0.7155172413793104`, recall `0.8383838383838383`, and F2 `0.810546875`; confusion counts were TN `56830`, FP `33`, FN `16`, and TP `83`. The test was evaluated once, and no threshold tuning occurred. The complete results are in the [MLP result report](../reports/mlp_final_evaluation.md).
+El candidato 2 fue el ganador de la búsqueda y se reajustó con todos los datos de desarrollo. Su ventaja media es mínima en relación con la variación entre folds, por lo que el resultado no demuestra una superioridad decisiva de la arquitectura. Los resultados finales en la prueba externa fueron Average Precision `0.8203794692697799`, precisión `0.7155172413793104`, recall `0.8383838383838383` y F2 `0.810546875`; los recuentos de la matriz de confusión fueron TN `56830`, FP `33`, FN `16` y TP `83`. La prueba se evaluó una vez y no hubo ajuste de umbral. Los resultados completos están en el [informe de resultados del MLP](../reports/mlp_final_evaluation.md).
 
-The tree baselines have validation-only results and are **not directly comparable** with the MLP outer-test metrics because the evaluated partitions differ. The MLP test estimate is uncertain because it includes only 99 frauds; it establishes neither current-fraud performance nor performance beyond this two-day 2013 dataset. Do not use the reserved outer test again for iteration.
+Los baselines de árboles tienen resultados solo de validación y **no son directamente comparables** con las métricas del MLP en la prueba externa, porque las particiones evaluadas son distintas. La estimación del MLP en la prueba es incierta porque incluye solo 99 fraudes; no establece el rendimiento frente al fraude actual ni el rendimiento más allá de este dataset de dos días de 2013. No se debe usar de nuevo la prueba externa reservada para iterar.
 
-## Limits and future work
+## Límites y trabajo futuro
 
-The preserved baseline comparison is one validation split with 79 fraud examples and remains provisional. The completed MLP experiment is a bounded initial search, not an exhaustive optimum; its final estimate is based on only 99 outer-test frauds, and the underlying data covers two days in 2013. Neither baseline nor MLP results establish current fraud performance, a business-approved threshold, or production readiness. Future work may cross-validate the tree baselines and design a fair comparison; any threshold selection must use development or validation data only.
+La comparación de baselines conservada es una sola partición de validación con 79 ejemplos de fraude y sigue siendo provisional. El experimento del MLP completado es una búsqueda inicial acotada, no un óptimo exhaustivo; su estimación final se basa en solo 99 fraudes de la prueba externa, y los datos subyacentes cubren dos días de 2013. Ni los resultados de los baselines ni los del MLP establecen el rendimiento frente al fraude actual, un umbral aprobado por el negocio ni la preparación para producción. El trabajo futuro puede incluir la validación cruzada de los baselines de árboles y el diseño de una comparación justa; cualquier selección de umbral debe usar solo datos de desarrollo o de validación.

@@ -1,47 +1,47 @@
-# Model Card: Preliminary Fraud Baselines and Completed MLP Evaluation
+# Model card: baselines preliminares de fraude y evaluación completa del MLP
 
-## Summary
+## Resumen
 
-This card describes a historical academic comparison of Decision Tree, Random Forest, and AdaBoost, plus completed MLP cross-validation, development-data training/refit, and one final outer-test evaluation. The tree results are validation-only evidence, and no model is approved for payment decisions.
+Esta model card describe una comparación académica histórica de Decision Tree, Random Forest y AdaBoost, además de la validación cruzada completa del MLP, el entrenamiento y reajuste con datos de desarrollo y una evaluación final en la prueba externa. Los resultados de los árboles son evidencia solo de validación y ningún modelo está aprobado para tomar decisiones de pago.
 
-## Intended use
+## Uso previsto
 
-- Teaching and reproducible comparison of classifiers on a public benchmark.
-- Studying precision-recall trade-offs under severe class imbalance.
+- Docencia y comparación reproducible de clasificadores en un benchmark público.
+- Estudio de las compensaciones entre precisión y recall (exhaustividad) bajo un desbalance de clases severo.
 
-## Out-of-scope use
+## Uso fuera de alcance
 
-Do not use these models or results to approve, decline, or otherwise make real payment decisions. They have not been evaluated for current fraud patterns, a specific issuer, operational latency, fairness, review capacity, or production performance.
+No se deben usar estos modelos ni resultados para aprobar, rechazar o tomar de otro modo decisiones de pago reales. No se han evaluado para patrones de fraude actuales, un emisor específico, latencia operativa, equidad, capacidad de revisión ni rendimiento en producción.
 
-## Data
+## Datos
 
-The input is the Kaggle credit-card fraud dataset (version 3), reported as 284,807 transactions over two days in 2013, with 492 fraud labels. Inputs are `Time`, `Amount`, and anonymized PCA components `V1`–`V28`; `Class` is the target. There are no card, customer, merchant, demographic, or behavioral-sequence fields. `Time` is elapsed seconds, not calendar time.
+La entrada es el dataset de fraude con tarjetas de crédito de Kaggle (versión 3), reportado como 284,807 transacciones de dos días de 2013, con 492 etiquetas de fraude. Las entradas son `Time`, `Amount` y los componentes PCA anonimizados `V1`–`V28`; `Class` es el objetivo. No hay campos de tarjeta, cliente, comercio, demografía ni secuencias de comportamiento. `Time` son segundos transcurridos, no tiempo calendario.
 
-## EDA and selection boundary
+## Límite del EDA y de la selección
 
-The full-source inventory in the EDA app is limited to input-integrity diagnostics and label prevalence for split stratification. The preserved [EDA report](../reports/eda_summary.md) contains exact values from a full-source descriptive pre-model audit; those historical results were not used to select features, transformations, models, or thresholds. After an explicit run-button action, the current app computes model-relevant plots and interpretations only from the grouped development partition (outer training plus validation). It does not pass outer-test rows to EDA functions or report outer-test counts.
+El inventario de la fuente completa en la aplicación de EDA se limita a diagnósticos de integridad de la entrada y a la prevalencia de etiquetas para la estratificación de las particiones. El [informe de EDA](../reports/eda_summary.md) conservado contiene valores exactos de una auditoría descriptiva de la fuente completa previa al modelo; esos resultados históricos no se usaron para seleccionar variables, transformaciones, modelos ni umbrales. Después de una acción explícita en el botón de ejecución, la aplicación actual calcula gráficos e interpretaciones relevantes para el modelo solo a partir de la partición agrupada de desarrollo (entrenamiento externo más validación). No pasa filas de la prueba externa a las funciones de EDA ni reporta recuentos de la prueba externa.
 
-## Evaluation
+## Evaluación
 
-The baseline results use one duplicate-group-aware inner validation partition with 45,569 rows and 79 frauds. A scaler and SMOTE are fitted inside each training-only pipeline; validation data retain natural prevalence. Classifiers use their default thresholds. Exact metrics and confusion matrices are in [the validation report](../reports/baseline_validation.md).
+Los resultados de los baselines usan una única partición interna de validación que respeta los grupos de duplicados, con 45,569 filas y 79 fraudes. Un escalador y SMOTE se ajustan dentro de cada pipeline de solo entrenamiento; los datos de validación conservan la prevalencia natural. Los clasificadores usan sus umbrales por defecto. Las métricas exactas y las matrices de confusión están en [el informe de validación](../reports/baseline_validation.md).
 
-Random Forest has the strongest provisional balance in this one split. AdaBoost has the highest recall but also a large false-alert burden. These findings are not estimates of performance outside this partition.
+Random Forest tiene el mejor equilibrio provisional en esta única partición. AdaBoost tiene el recall más alto, pero también una gran carga de falsas alertas. Estos hallazgos no son estimaciones del rendimiento fuera de esta partición.
 
-The completed MLP phase combines only inner training and validation data for a three-fold `StratifiedGroupKFold` search, passing the feature-group IDs. Its `StandardScaler -> SMOTE -> MLPClassifier` pipeline keeps scaling and sampling inside each fold. Candidate 2, `hidden_layer_sizes=(64, 32)`, `alpha=0.0001`, and `learning_rate_init=0.001`, was the search winner; its mean CV Average Precision was `0.7892942255438676` (standard deviation `0.024821041864665654`). The mean advantage over candidate 1 is tiny relative to fold variation and does not establish decisive architecture superiority. The selected pipeline was refit on all development data, then the reserved outer test was evaluated once after selection. Its metrics were Average Precision `0.8203794692697799`, precision `0.7155172413793104`, recall `0.8383838383838383`, and F2 `0.810546875`, on 56,962 rows including 99 frauds. Average Precision uses probabilities; precision, recall, F2, and confusion counts use default predictions. No threshold tuning occurred. See the [MLP report](../reports/mlp_final_evaluation.md) for both candidate results and the confusion matrix.
+La fase completada del MLP combina solo los datos internos de entrenamiento y validación para una búsqueda de tres folds con `StratifiedGroupKFold`, pasando los identificadores de grupo de variables. Su pipeline `StandardScaler -> SMOTE -> MLPClassifier` mantiene el escalado y el muestreo dentro de cada fold. El candidato 2, `hidden_layer_sizes=(64, 32)`, `alpha=0.0001` y `learning_rate_init=0.001`, fue el ganador de la búsqueda; su Average Precision medio en CV fue `0.7892942255438676` (desviación estándar `0.024821041864665654`). La ventaja media sobre el candidato 1 es mínima en relación con la variación entre folds y no establece una superioridad decisiva de la arquitectura. El pipeline seleccionado se reajustó con todos los datos de desarrollo y luego la prueba externa reservada se evaluó una vez después de la selección. Sus métricas fueron Average Precision `0.8203794692697799`, precisión `0.7155172413793104`, recall `0.8383838383838383` y F2 `0.810546875`, sobre 56,962 filas que incluyen 99 fraudes. Average Precision usa probabilidades; la precisión, el recall, F2 y los recuentos de la matriz de confusión usan las predicciones por defecto. No hubo ajuste de umbral. Consultar el [informe del MLP](../reports/mlp_final_evaluation.md) para ver los resultados de ambos candidatos y la matriz de confusión.
 
-The baseline tree models have validation-only results and are **not directly comparable** with the MLP outer-test metrics because they were evaluated on different partitions.
+Los modelos de árbol de baseline tienen resultados solo de validación y **no son directamente comparables** con las métricas del MLP en la prueba externa, porque se evaluaron en particiones distintas.
 
-## Limitations and risks
+## Limitaciones y riesgos
 
-- Severe class imbalance and only 79 fraud examples in validation make estimates uncertain.
-- The final MLP holdout estimate includes only 99 frauds and is uncertain; it must not be used for further iteration or threshold selection.
-- The dataset covers two days in 2013; current and temporal generalization are unknown.
-- Thresholds have not been selected against an institution-approved cost function or review capacity.
-- The data do not support demographic fairness analysis or card/customer-level behavior.
-- The MLP search is only a two-candidate initial grid; even after execution, it will not be an exhaustive optimum.
-- Neither model phase establishes production readiness or current fraud performance. The MLP result does not imply performance on current fraud patterns or beyond this two-day 2013 dataset.
-- Do not use the reserved outer test again for iteration. If desired, cross-validate the tree baselines and design a fair model comparison using development data; select any threshold on development or validation data only.
+- El desbalance de clases severo y solo 79 ejemplos de fraude en validación hacen inciertas las estimaciones.
+- La estimación final del holdout del MLP incluye solo 99 fraudes y es incierta; no se debe usar para seguir iterando ni para seleccionar umbrales.
+- El dataset cubre dos días de 2013; la generalización actual y temporal es desconocida.
+- Los umbrales no se seleccionaron con una función de costo o una capacidad de revisión aprobadas por una institución.
+- Los datos no permiten un análisis de equidad demográfica ni de comportamiento a nivel de tarjeta o cliente.
+- La búsqueda del MLP es solo una grilla inicial de dos candidatos; incluso después de ejecutarla, no será un óptimo exhaustivo.
+- Ninguna de las dos fases de modelos establece la preparación para producción ni el rendimiento frente al fraude actual. El resultado del MLP no implica rendimiento con patrones de fraude actuales ni más allá de este dataset de dos días de 2013.
+- No se debe usar de nuevo la prueba externa reservada para iterar. Si se desea, validar con validación cruzada los baselines de árboles y diseñar una comparación justa de modelos usando datos de desarrollo; seleccionar cualquier umbral solo con datos de desarrollo o de validación.
 
-## Completed MLP search
+## Búsqueda completada del MLP
 
-A bounded search compared two MLP candidates using 30 numeric inputs. Both used ReLU, Adam, `learning_rate_init=0.001`, batch size 256, `max_iter=100`, `early_stopping=False`, and seed 42. The selected search winner used hidden layers `(64, 32)` and `alpha=0.0001`; the selected pipeline was refit on all development data before the single outer-test evaluation. Early stopping was disabled inside the post-SMOTE pipeline so the explicit grouped folds remained the validation boundary. The two-candidate search is not exhaustive, and its winner is not proof of architecture superiority.
+Una búsqueda acotada comparó dos candidatos de MLP usando 30 entradas numéricas. Ambos usaron ReLU, Adam, `learning_rate_init=0.001`, tamaño de lote 256, `max_iter=100`, `early_stopping=False` y semilla 42. El ganador seleccionado de la búsqueda usó capas ocultas `(64, 32)` y `alpha=0.0001`; el pipeline seleccionado se reajustó con todos los datos de desarrollo antes de la única evaluación en la prueba externa. La parada temprana se desactivó dentro del pipeline posterior a SMOTE para que los folds agrupados explícitos siguieran siendo el límite de validación. La búsqueda de dos candidatos no es exhaustiva y su ganador no es prueba de superioridad de la arquitectura.

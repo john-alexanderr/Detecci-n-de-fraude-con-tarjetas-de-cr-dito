@@ -1,25 +1,25 @@
-# Business Requirements and Benchmark Scope
+# Requisitos de negocio y alcance del benchmark
 
-## Problem
+## Problema
 
-The academic benchmark studies how transaction features rank possible fraud under severe class imbalance. In a real payment flow, a flagged transaction could be declined, sent for additional verification, or reviewed. Missing fraud can increase loss and dispute work; false alerts can create customer friction and lost revenue.
+El benchmark académico estudia cómo las variables de las transacciones ordenan posibles fraudes bajo un desbalance de clases severo. En un flujo de pagos real, una transacción marcada podría rechazarse, enviarse a verificación adicional o revisarse. Dejar pasar un fraude puede aumentar las pérdidas y el trabajo de disputas; las falsas alertas pueden generar fricción con el cliente y pérdida de ingresos.
 
-## Evaluation goals
+## Objetivos de evaluación
 
-- Compare binary classifiers using Average Precision, precision, recall, F2, and confusion-matrix counts.
-- Make the false-alert burden visible alongside fraud detection.
-- Keep each validation and test partition at the dataset's natural class prevalence.
-- Prevent identical input-feature signatures from crossing the outer or inner split.
-- Keep the outer test partition untouched until model choices are frozen.
+- Comparar clasificadores binarios con Average Precision (AP), precisión, recall (exhaustividad), F2 y recuentos de la matriz de confusión.
+- Hacer visible la carga de falsas alertas junto con la detección de fraude.
+- Mantener cada partición de validación y prueba en la prevalencia natural de clases del dataset.
+- Evitar que firmas idénticas de variables de entrada crucen la partición externa o interna.
+- Mantener intacta la partición de prueba externa hasta que las decisiones de modelo estén congeladas.
 
-## Supported claims
+## Afirmaciones respaldadas
 
-The current work supports descriptive analysis of a public historical dataset and one preliminary grouped validation comparison. It does not estimate institution-specific financial costs, identify a business-approved operating threshold, or establish a deployable fraud policy.
+El trabajo actual respalda el análisis descriptivo de un dataset histórico público y una comparación preliminar de validación agrupada. No estima costos financieros específicos de una institución, no identifica un umbral operativo aprobado por el negocio ni establece una política de fraude desplegable.
 
-The dataset can support further academic experiments in schema and data-quality audits, feature-distribution analysis, rare-event classification, threshold trade-offs, and model-only inference-time benchmarking in a stated local environment. A chronological split could provide a limited historical simulation after verifying row ordering, but two days of data provide weak evidence about temporal generalization.
+El dataset puede respaldar más experimentos académicos sobre auditoría de esquema y calidad de datos, análisis de distribución de variables, clasificación de eventos raros, compensaciones de umbral y benchmarking del tiempo de inferencia del modelo por sí solo en un entorno local declarado. Una partición cronológica podría ofrecer una simulación histórica limitada después de verificar el orden de las filas, pero dos días de datos aportan evidencia débil sobre la generalización temporal.
 
-## Out of scope
+## Fuera de alcance
 
-The dataset has no card or customer identifiers, merchant attributes, device fingerprints, IP addresses, geography, or demographic attributes. It cannot support per-card/customer behavior, merchant risk, geographic checks, calendar-time analysis (hour of day, weekday, holidays, or seasonality), fairness analysis across demographic groups, or measurement of approval, decline, chargeback, recovery, investigation, and churn outcomes. `Amount` alone is not a complete fraud-loss measure and cannot establish the institution's false-positive or false-negative costs.
+El dataset no tiene identificadores de tarjeta ni de cliente, atributos de comercio, huellas de dispositivo, direcciones IP, geografía ni atributos demográficos. No puede respaldar el comportamiento por tarjeta o por cliente, el riesgo de comercio, las verificaciones geográficas, el análisis de tiempo calendario (hora del día, día de la semana, feriados o estacionalidad), el análisis de equidad entre grupos demográficos ni la medición de resultados de aprobación, rechazo, contracargo, recuperación, investigación y abandono de clientes. `Amount` por sí sola no es una medida completa de la pérdida por fraude y no puede establecer los costos de falsos positivos o falsos negativos de la institución.
 
-This repository does not implement a payment API, a production decision service, real-time streaming, monitoring, or operational infrastructure. The dataset cannot validate an end-to-end authorization SLA, current fraud performance, reliable concept-drift handling, or generalization to other periods, regions, issuers, or transaction channels. It covers only two days from 2013.
+Este repositorio no implementa una API de pagos, un servicio de decisión en producción, streaming en tiempo real, monitoreo ni infraestructura operativa. El dataset no puede validar un SLA de autorización de extremo a extremo, el rendimiento actual frente al fraude, un manejo confiable de la deriva de concepto (concept drift) ni la generalización a otros períodos, regiones, emisores o canales de transacción. Cubre solo dos días de 2013.

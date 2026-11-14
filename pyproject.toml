@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "credit-card-fraud-academic-benchmark"
 version = "0.1.0"
-description = "A reproducible academic benchmark for credit-card fraud detection"
+description = "Un benchmark académico reproducible para la detección de fraude con tarjetas de crédito"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

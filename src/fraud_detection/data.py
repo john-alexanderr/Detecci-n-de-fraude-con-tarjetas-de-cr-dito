@@ -1,4 +1,4 @@
-"""Dataset retrieval and schema validation."""
+"""Obtención del dataset y validación del esquema."""
 
 from __future__ import annotations
 
@@ -18,17 +18,17 @@ EXPECTED_COLUMNS = (*FEATURE_COLUMNS, TARGET_COLUMN)
 
 
 def repository_root() -> Path:
-    """Return the project root based on this installed source module."""
+    """Devuelve la raíz del proyecto a partir de este módulo fuente instalado."""
     return Path(__file__).resolve().parents[2]
 
 
 def raw_data_path() -> Path:
-    """Return the repository-local path for the ignored source CSV."""
+    """Devuelve la ruta local del repositorio para el CSV de origen ignorado."""
     return repository_root() / "data" / "raw" / "creditcard.csv"
 
 
 def ensure_dataset(path: str | Path | None = None) -> Path:
-    """Download the pinned dataset only when the local CSV is absent."""
+    """Descarga el dataset fijado solo cuando el CSV local no existe."""
     destination = Path(path) if path is not None else raw_data_path()
     if destination.is_file():
         return destination
@@ -39,7 +39,7 @@ def ensure_dataset(path: str | Path | None = None) -> Path:
     cached_csv = cached_directory / "creditcard.csv"
     if not cached_csv.is_file():
         raise FileNotFoundError(
-            "The pinned Kaggle dataset did not contain creditcard.csv."
+            "El dataset fijado de Kaggle no contenía creditcard.csv."
         )
 
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -48,18 +48,20 @@ def ensure_dataset(path: str | Path | None = None) -> Path:
 
 
 def validate_credit_card_schema(frame: pd.DataFrame) -> pd.DataFrame:
-    """Validate expected columns, numeric inputs, and binary non-null labels."""
+    """Valida las columnas esperadas, las entradas numéricas y las etiquetas binarias no nulas."""
     if not isinstance(frame, pd.DataFrame):
-        raise TypeError("Expected the credit-card dataset as a pandas DataFrame.")
+        raise TypeError(
+            "Se esperaba el dataset de tarjetas de crédito como un DataFrame de pandas."
+        )
 
     actual_columns = tuple(frame.columns)
     if actual_columns != EXPECTED_COLUMNS:
         missing = [column for column in EXPECTED_COLUMNS if column not in actual_columns]
         unexpected = [column for column in actual_columns if column not in EXPECTED_COLUMNS]
         raise ValueError(
-            "Unexpected dataset columns or order. "
-            f"Missing: {missing}; unexpected: {unexpected}; "
-            f"expected order: {list(EXPECTED_COLUMNS)}."
+            "Columnas del dataset inesperadas o en orden incorrecto. "
+            f"Faltantes: {missing}; inesperadas: {unexpected}; "
+            f"orden esperado: {list(EXPECTED_COLUMNS)}."
         )
 
     non_numeric = [
@@ -68,18 +70,20 @@ def validate_credit_card_schema(frame: pd.DataFrame) -> pd.DataFrame:
         if not pd.api.types.is_numeric_dtype(frame[column].dtype)
     ]
     if non_numeric:
-        raise TypeError(f"Input columns must be numeric: {non_numeric}.")
+        raise TypeError(f"Las columnas de entrada deben ser numéricas: {non_numeric}.")
 
     target = frame[TARGET_COLUMN]
     if not pd.api.types.is_numeric_dtype(target.dtype):
-        raise TypeError("The Class target must be numeric with values 0 and 1.")
+        raise TypeError("El objetivo Class debe ser numérico con valores 0 y 1.")
     if target.isna().any() or not target.isin((0, 1)).all():
-        raise ValueError("The Class target must be non-null and contain only 0 and 1.")
+        raise ValueError(
+            "El objetivo Class no debe tener valores nulos y solo debe contener 0 y 1."
+        )
 
     return frame
 
 
 def load_dataset(path: str | Path | None = None) -> pd.DataFrame:
-    """Load the local or pinned Kaggle CSV and validate its schema."""
+    """Carga el CSV local o el dataset fijado de Kaggle y valida su esquema."""
     source_path = ensure_dataset(path)
     return validate_credit_card_schema(pd.read_csv(source_path))

@@ -1,31 +1,31 @@
-# Baseline Validation Results
+# Resultados de validación de baselines
 
-## Evaluation boundary
+## Límite de la evaluación
 
-These preserved results come from one grouped inner validation partition containing **45,569 rows and 79 frauds**. Validation retains natural class prevalence. The pipelines apply `StandardScaler -> SMOTE -> classifier` to training data only. Precision, recall, F2, and confusion matrices use each classifier's default prediction threshold; Average Precision uses predicted probabilities.
+Estos resultados conservados provienen de una única partición interna de validación agrupada que contiene **45,569 filas y 79 fraudes**. La validación mantiene la prevalencia natural de clases. Los pipelines aplican `StandardScaler -> SMOTE -> classifier` solo a los datos de entrenamiento. La precisión, el recall, F2 y las matrices de confusión usan el umbral de predicción por defecto de cada clasificador; Average Precision usa las probabilidades predichas.
 
-The outer test partition was not used for selection or scoring. Cross-validation, threshold tuning, hyperparameter tuning, and MLP training have not been performed.
+La partición de prueba externa no se usó para selección ni evaluación. No se realizaron validación cruzada, ajuste de umbral, ajuste de hiperparámetros ni entrenamiento del MLP.
 
-## Metrics
+## Métricas
 
-| Classifier | Average Precision | Precision | Recall | F2 |
+| Clasificador | Average Precision | Precisión | Recall | F2 |
 | --- | ---: | ---: | ---: | ---: |
 | Decision Tree | 0.273289 | 0.359281 | 0.759494 | 0.621118 |
 | Random Forest | 0.849946 | 0.876712 | 0.810127 | 0.822622 |
 | AdaBoost | 0.736748 | 0.048161 | 0.911392 | 0.198785 |
 
-## Confusion matrices
+## Matrices de confusión
 
-Rows are true labels and columns are predictions, ordered `[0, 1]`.
+Las filas son etiquetas reales y las columnas son predicciones, en el orden `[0, 1]`.
 
-| Classifier | TN | FP | FN | TP |
+| Clasificador | TN | FP | FN | TP |
 | --- | ---: | ---: | ---: | ---: |
 | Decision Tree | 45,383 | 107 | 19 | 60 |
 | Random Forest | 45,481 | 9 | 15 | 64 |
 | AdaBoost | 44,067 | 1,423 | 7 | 72 |
 
-## Interpretation
+## Interpretación
 
-Random Forest is the strongest **provisional** balance on this single validation split: it has the highest Average Precision, precision, and F2 among these three default-threshold results. AdaBoost detects the most frauds (72 of 79; recall 0.911392) but produces 1,423 false alerts and precision 0.048161. The Decision Tree is a reference point between the two behaviors.
+Random Forest es el mejor equilibrio **provisional** en esta única partición de validación: tiene el Average Precision, la precisión y el F2 más altos entre estos tres resultados con umbral por defecto. AdaBoost detecta la mayor cantidad de fraudes (72 de 79; recall 0.911392), pero produce 1,423 falsas alertas y una precisión de 0.048161. Decision Tree es un punto de referencia entre ambos comportamientos.
 
-This comparison does not establish a final model, business-approved threshold, current fraud performance, or production readiness. The small validation fraud count and two-day 2013 source period limit generalization claims.
+Esta comparación no establece un modelo final, un umbral aprobado por el negocio, el rendimiento frente al fraude actual ni la preparación para producción. El pequeño recuento de fraudes en validación y el período de origen de dos días de 2013 limitan las afirmaciones de generalización.

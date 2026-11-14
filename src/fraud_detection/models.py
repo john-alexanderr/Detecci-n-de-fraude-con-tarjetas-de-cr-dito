@@ -1,4 +1,4 @@
-"""Leak-safe baseline pipeline definitions."""
+"""Definiciones de pipelines base sin fuga de información."""
 
 from imblearn.over_sampling import SMOTE
 from imblearn.pipeline import Pipeline
@@ -8,7 +8,7 @@ from sklearn.tree import DecisionTreeClassifier
 
 
 def build_baseline_pipelines() -> dict[str, Pipeline]:
-    """Create the prior baseline estimators in scaler-SMOTE-model order."""
+    """Crea los estimadores base de referencia en orden escalador, SMOTE y clasificador."""
     classifiers = {
         "Decision Tree": DecisionTreeClassifier(random_state=42),
         "Random Forest": RandomForestClassifier(

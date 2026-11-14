@@ -1,4 +1,4 @@
-"""Reusable descriptive plots for the EDA Marimo application."""
+"""Gráficos descriptivos reutilizables para la aplicación Marimo de EDA."""
 
 import numpy as np
 import pandas as pd
@@ -7,7 +7,7 @@ import seaborn as sns
 
 
 def set_plot_theme() -> None:
-    """Apply the shared visual style used by the EDA charts."""
+    """Aplica el estilo visual compartido por los gráficos de EDA."""
     sns.set_theme(style="whitegrid", context="notebook")
 
 
@@ -16,9 +16,9 @@ def plot_class_prevalence(frame: pd.DataFrame):
     sns.countplot(data=frame, x="Class", ax=axis)
     axis.set_yscale("log")
     axis.set(
-        title="Transaction counts by target class",
-        xlabel="Class (0 = legitimate, 1 = fraud)",
-        ylabel="Count (log scale)",
+        title="Cantidad de transacciones por clase objetivo",
+        xlabel="Class (0 = legítima, 1 = fraude)",
+        ylabel="Cantidad (escala logarítmica)",
     )
     fig.tight_layout()
     return fig
@@ -39,9 +39,9 @@ def plot_amount_distribution(frame: pd.DataFrame):
         ax=axis,
     )
     axis.set(
-        title="Transaction amount distribution on a log1p axis",
+        title="Distribución del importe de las transacciones en un eje log1p",
         xlabel="log1p(Amount)",
-        ylabel="Within-class density",
+        ylabel="Densidad dentro de cada clase",
     )
     fig.tight_layout()
     return fig
@@ -53,7 +53,7 @@ def plot_pca_marginals(frame: pd.DataFrame):
     for component, axis in zip(components, axes.flat, strict=True):
         sns.histplot(data=frame, x=component, bins=50, stat="density", ax=axis)
         axis.set_title(component)
-    figure.suptitle("Marginal distributions of anonymized PCA components", y=1.01)
+    figure.suptitle("Distribuciones marginales de los componentes PCA anonimizados", y=1.01)
     figure.tight_layout()
     return figure
 
@@ -70,8 +70,8 @@ def plot_amount_by_class(frame: pd.DataFrame):
         ax=axis,
     )
     axis.set(
-        title="log1p(Amount) by target class",
-        xlabel="Class (0 = legitimate, 1 = fraud)",
+        title="log1p(Amount) por clase objetivo",
+        xlabel="Class (0 = legítima, 1 = fraude)",
         ylabel="log1p(Amount)",
     )
     fig.tight_layout()
@@ -89,7 +89,7 @@ def plot_selected_pca_by_class(frame: pd.DataFrame):
             showfliers=False,
             ax=axis,
         )
-        axis.set_title(f"{component} by target class")
+        axis.set_title(f"{component} por clase objetivo")
     figure.tight_layout()
     return figure
 
@@ -100,9 +100,9 @@ def plot_target_associations(frame: pd.DataFrame):
     associations.plot.barh(ax=axis, color="steelblue")
     axis.axvline(0, color="black", linewidth=0.8)
     axis.set(
-        title="Pearson association of numeric inputs with Class",
-        xlabel="Pearson correlation (association, not causation)",
-        ylabel="Input feature",
+        title="Asociación de Pearson de las entradas numéricas con Class",
+        xlabel="Correlación de Pearson (asociación, no causalidad)",
+        ylabel="Variable de entrada",
     )
     fig.tight_layout()
     return fig
@@ -120,7 +120,7 @@ def plot_correlation_heatmap(frame: pd.DataFrame):
         yticklabels=True,
         ax=axis,
     )
-    axis.set_title("Pearson correlation across inputs and target")
+    axis.set_title("Correlación de Pearson entre las entradas y el objetivo")
     fig.tight_layout()
     return fig
 
@@ -138,15 +138,15 @@ def plot_relative_elapsed_time(frame: pd.DataFrame):
         width=0.85,
     )
     axes[0].set(
-        title="Counts by relative elapsed-hour bin",
+        title="Cantidad de transacciones y fraudes por intervalo de hora transcurrida",
         xlabel="",
-        ylabel="Transaction and fraud counts",
+        ylabel="Cantidad de transacciones y fraudes",
     )
     hourly_summary["fraud_rate"].plot(kind="line", marker="o", ax=axes[1])
     axes[1].set(
-        title="Fraud rate by relative elapsed-hour bin",
-        xlabel="Relative elapsed hour (not calendar hour)",
-        ylabel="Fraud rate",
+        title="Tasa de fraude por intervalo de hora transcurrida",
+        xlabel="Hora transcurrida relativa (no hora de calendario)",
+        ylabel="Tasa de fraude",
     )
     figure.tight_layout()
     return figure
@@ -166,9 +166,9 @@ def plot_iqr_flag_rates(frame: pd.DataFrame):
     fig, axis = plt.subplots(figsize=(9, 10))
     rates.plot.barh(ax=axis, color="darkorange")
     axis.set(
-        title="Rows outside 1.5 × IQR fences by numeric input",
-        xlabel="Rows flagged (%)",
-        ylabel="Input feature",
+        title="Filas fuera de los límites de 1.5 × IQR por variable numérica",
+        xlabel="Filas marcadas (%)",
+        ylabel="Variable de entrada",
     )
     fig.tight_layout()
     return fig
@@ -185,7 +185,9 @@ def plot_outlier_class_comparison(frame: pd.DataFrame):
         showfliers=False,
         ax=axes[0],
     )
-    axes[0].set(title="log1p(Amount) by class", xlabel="Class", ylabel="log1p(Amount)")
+    axes[0].set(
+        title="log1p(Amount) por clase", xlabel="Class", ylabel="log1p(Amount)"
+    )
     sns.boxplot(
         data=comparison,
         x="Class",
@@ -193,6 +195,6 @@ def plot_outlier_class_comparison(frame: pd.DataFrame):
         showfliers=False,
         ax=axes[1],
     )
-    axes[1].set(title="V27 by class", xlabel="Class", ylabel="V27")
+    axes[1].set(title="V27 por clase", xlabel="Class", ylabel="V27")
     figure.tight_layout()
     return figure

@@ -48,21 +48,21 @@ def _():
 @app.cell
 def _(mo):
     mo.md(r"""
-    # 01 — Dataset understanding and exploratory analysis
+    # 01 — Comprensión del dataset y análisis exploratorio
 
-    Build an evidence-led view of the public credit-card fraud dataset before modeling. This app downloads the pinned source only when the local CSV is absent and never edits or removes observations.
+    Construye una visión basada en evidencia del dataset público de fraude con tarjetas de crédito antes del modelado. Esta aplicación descarga la fuente fijada solo cuando el CSV local no existe y nunca edita ni elimina observaciones.
 
-    ## Business framing and evaluation boundary
+    ## Encuadre de negocio y límite de la evaluación
 
-    A payment team may approve, decline, request additional verification, or review a transaction. Missing fraud may increase losses; flagging legitimate activity may create customer friction. The appropriate threshold depends on institution-specific costs and review capacity, which this dataset does not provide.
+    Un equipo de pagos puede aprobar, rechazar, solicitar verificación adicional o revisar una transacción. No detectar un fraude puede aumentar las pérdidas; marcar como sospechosa una actividad legítima puede generar fricción con el cliente. El umbral adecuado depende de los costos y la capacidad de revisión de cada institución, datos que este dataset no proporciona.
 
-    The Kaggle source reports **284,807 transactions from two days in September 2013**, including **492 frauds**. `Class` is the binary target (`0` legitimate, `1` fraud). Accuracy alone is misleading under this severe imbalance; use Average Precision / PR-AUC, precision, recall, F1 or F2, and confusion matrices.
+    La fuente de Kaggle reporta **284,807 transacciones de dos días de septiembre de 2013**, incluidas **492 fraudes**. `Class` es la variable objetivo binaria (`0` legítima, `1` fraude). La exactitud por sí sola es engañosa con este desequilibrio tan severo; usa Average Precision / PR-AUC, precisión, recall (exhaustividad), F1 o F2 y matrices de confusión.
 
-    The full-source cells below are limited to source inventory and the label prevalence needed for split stratification; they are not model-selection evidence. After an explicit button click, every model-relevant EDA plot and interpretation uses only a grouped development partition (outer training plus validation). The outer test is not passed to EDA functions or summarized in this app.
+    Las celdas de fuente completa que aparecen a continuación se limitan al inventario de la fuente y a la prevalencia de etiquetas necesaria para la estratificación de la división; no son evidencia para seleccionar modelos. Después de hacer clic en un botón de forma explícita, cada gráfico e interpretación de EDA relevante para el modelo usa solo una partición de desarrollo agrupada (entrenamiento externo más validación). La prueba externa no se pasa a las funciones de EDA ni se resume en esta aplicación.
 
-    ## Dataset scope
+    ## Alcance del dataset
 
-    There are 30 numeric inputs: `Time`, `Amount`, and `V1`–`V28`. `Time` is seconds elapsed since the first transaction—not a calendar timestamp. `V1`–`V28` are anonymized PCA components with no supplied direct business meaning. The dataset has no card/customer identifiers, merchant fields, demographic attributes, or behavioral sequence.
+    Hay 30 variables de entrada numéricas: `Time`, `Amount` y `V1`–`V28`. `Time` son los segundos transcurridos desde la primera transacción, no una marca de tiempo de calendario. `V1`–`V28` son componentes PCA anonimizados y no tienen un significado de negocio directo suministrado. El dataset no incluye identificadores de tarjeta o cliente, campos de comercio, atributos demográficos ni secuencias de comportamiento.
     """)
     return
 
@@ -72,9 +72,9 @@ def _(load_dataset, mo, raw_data_path):
     data_path = raw_data_path()
     df = load_dataset(data_path)
     mo.md(
-        f"Using `{data_path.relative_to(data_path.parents[2])}`. "
-        "The source file is reused if present; otherwise only `creditcard.csv` "
-        "from Kaggle dataset version 3 is copied into `data/raw/`."
+        f"Usando `{data_path.relative_to(data_path.parents[2])}`. "
+        "El archivo de origen se reutiliza si existe; de lo contrario, solo se copia "
+        "`creditcard.csv` del dataset de Kaggle, versión 3, en `data/raw/`."
     )
     return (df,)
 
@@ -82,9 +82,9 @@ def _(load_dataset, mo, raw_data_path):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## Full-source inventory and stratification diagnostics
+    ## Inventario de la fuente completa y diagnósticos de estratificación
 
-    The following raw-source views describe schema, sample rows, summary statistics, missingness, duplicates, and label prevalence. They support input-integrity review and class stratification only; they are not evidence for selecting features, transformations, models, or thresholds.
+    Las siguientes vistas de la fuente sin procesar describen el esquema, filas de ejemplo, estadísticas resumidas, valores faltantes, duplicados y prevalencia de etiquetas. Solo sirven para revisar la integridad de la entrada y la estratificación de clases; no son evidencia para seleccionar variables, transformaciones, modelos o umbrales.
     """)
     return
 
@@ -104,13 +104,13 @@ def _(df, pd):
             ]
         },
         index=[
-            "Rows",
-            "Columns",
-            "Numeric inputs",
-            "Missing cells",
-            "Exact duplicate rows",
-            "Fraud rows",
-            "Fraud prevalence (%)",
+            "Filas",
+            "Columnas",
+            "Variables de entrada numéricas",
+            "Celdas faltantes",
+            "Filas duplicadas exactas",
+            "Filas de fraude",
+            "Prevalencia de fraude (%)",
         ],
     )
     audit_overview
@@ -144,9 +144,9 @@ def _(df):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ### Source-inventory interpretation
+    ### Interpretación del inventario de la fuente
 
-    The preserved full-source profile reports 284,807 rows, 31 columns, 1,081 exact duplicate rows (0.3796%), and zero feature-conflicting-target groups. No missing values were detected. Candidate sentinel-like values are `Time = 999` (2 rows) and `Amount = 999` (7 rows); neither is confirmed missing. These are source-inventory diagnostics, not model-selection evidence. Keep duplicates and unusual values during this descriptive audit—these findings do not authorize deletion, recoding, or capping.
+    El perfil preservado de la fuente completa reporta 284,807 filas, 31 columnas, 1,081 filas duplicadas exactas (0.3796%) y cero grupos con variables de entrada idénticas y etiquetas contradictorias. No se detectaron valores faltantes. Los posibles valores tipo centinela son `Time = 999` (2 filas) y `Amount = 999` (7 filas); ninguno está confirmado como faltante. Estos diagnósticos pertenecen al inventario de la fuente y no son evidencia para seleccionar modelos. Conserva los duplicados y los valores inusuales durante esta auditoría descriptiva: estos hallazgos no autorizan a eliminar, recodificar ni limitar valores.
     """)
     return
 
@@ -154,9 +154,9 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## Development-only modeling EDA
+    ## EDA de modelado usando solo datos de desarrollo
 
-    Creating the grouped partition is intentionally gated because it hashes the full feature table. The split cell exposes only the combined outer-development frame (training plus validation) to the EDA cells below. No outer-test counts or test-derived EDA results are displayed.
+    La creación de la partición agrupada está condicionada intencionalmente a un botón porque calcula un hash de toda la tabla de variables. La celda de división expone a las celdas de EDA solo la tabla combinada de desarrollo externo (entrenamiento más validación). No se muestran recuentos de la prueba externa ni resultados de EDA derivados de la prueba.
     """)
     return
 
@@ -164,7 +164,7 @@ def _(mo):
 @app.cell
 def _(mo):
     development_eda_button = mo.ui.run_button(
-        label="Create grouped development partition"
+        label="Crear partición de desarrollo agrupada"
     )
     development_eda_button
     return (development_eda_button,)
@@ -174,7 +174,10 @@ def _(mo):
 def _(create_grouped_partitions, df, development_eda_button, mo, pd):
     mo.stop(
         not development_eda_button.value,
-        mo.md("Click the button above to prepare development-only EDA."),
+        mo.md(
+            "Hacer clic en el botón de arriba para preparar el EDA solo con datos "
+            "de desarrollo."
+        ),
     )
     grouped_partitions = create_grouped_partitions(
         df.drop(columns=["Class"]),
@@ -194,9 +197,9 @@ def _(create_grouped_partitions, df, development_eda_button, mo, pd):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ### EDA part 1 — Univariate distributions
+    ### EDA parte 1 — Distribuciones univariadas
 
-    The plots use only the grouped development partition. Distribution differences alone do not establish predictive value.
+    Los gráficos usan solo la partición de desarrollo agrupada. Las diferencias de distribución por sí solas no demuestran valor predictivo.
     """)
     return
 
@@ -210,8 +213,8 @@ def _(development_df, plot_class_prevalence):
 @app.cell
 def _(development_df, mo, plot_amount_distribution):
     mo.md(
-        "The `log1p` axis compresses the development-partition display only; "
-        "the source values remain unchanged."
+        "El eje `log1p` solo comprime la visualización de la partición de desarrollo; "
+        "los valores de origen no cambian."
     )
     plot_amount_distribution(development_df)
     return
@@ -226,9 +229,9 @@ def _(development_df, plot_pca_marginals):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ### EDA part 2 — Bivariate comparisons
+    ### EDA parte 2 — Comparaciones bivariadas
 
-    Class-wise plots and target associations below use only the grouped development partition. They are exploratory evidence, not causal claims or automatic feature-selection rules.
+    Los gráficos por clase y las asociaciones con el objetivo que aparecen a continuación usan solo la partición de desarrollo agrupada. Son evidencia exploratoria, no afirmaciones causales ni reglas automáticas de selección de variables.
     """)
     return
 
@@ -248,8 +251,8 @@ def _(development_df, plot_selected_pca_by_class):
 @app.cell
 def _(development_df, mo, plot_target_associations):
     mo.md(
-        "Pearson associations here are computed only on the development partition; "
-        "they are not causal effects or proof of leakage."
+        "Las asociaciones de Pearson aquí se calculan solo sobre la partición de desarrollo; "
+        "no son efectos causales ni prueba de fuga de información."
     )
     plot_target_associations(development_df)
     return
@@ -258,9 +261,9 @@ def _(development_df, mo, plot_target_associations):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ### EDA part 3 — Multivariate relationships
+    ### EDA parte 3 — Relaciones multivariadas
 
-    The correlation view summarizes pairwise linear associations in the development partition only. Correlations alone do not establish feature utility or justify removal.
+    La vista de correlación resume asociaciones lineales de a pares solo en la partición de desarrollo. Las correlaciones por sí solas no demuestran la utilidad de una variable ni justifican eliminarla.
     """)
     return
 
@@ -274,9 +277,9 @@ def _(development_df, plot_correlation_heatmap):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ### EDA part 4 — Relative elapsed-time pattern
+    ### EDA parte 4 — Patrón de tiempo transcurrido relativo
 
-    The development-partition bins below show counts and fraud rates over elapsed time. `Time` is not calendar time, so this cannot support clock-hour, weekday, holiday, or seasonality conclusions. Local variation also cannot establish temporal generalization.
+    Los intervalos de la partición de desarrollo que aparecen a continuación muestran recuentos y tasas de fraude a lo largo del tiempo transcurrido. `Time` no es tiempo de calendario, por lo que esto no permite sacar conclusiones sobre horas del día, días de la semana, feriados ni estacionalidad. La variación local tampoco permite establecer generalización temporal.
     """)
     return
 
@@ -290,9 +293,9 @@ def _(development_df, plot_relative_elapsed_time):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ### EDA part 5 — IQR outlier inspection
+    ### EDA parte 5 — Inspección de valores atípicos con IQR
 
-    The 1.5 × IQR fences and class comparisons below are calculated only on the development partition. They flag values for review but do not distinguish valid rare transactions from data errors. No automatic row deletion or capping is applied.
+    Los límites de 1.5 × IQR y las comparaciones por clase que aparecen a continuación se calculan solo sobre la partición de desarrollo. Marcan valores para revisión, pero no distinguen transacciones raras válidas de errores de datos. No se eliminan filas ni se limitan valores de forma automática.
     """)
     return
 

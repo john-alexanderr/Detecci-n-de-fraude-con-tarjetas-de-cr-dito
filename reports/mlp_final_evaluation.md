@@ -1,51 +1,51 @@
-# MLP Grouped Cross-Validation and Final Evaluation
+# Validación cruzada agrupada del MLP y evaluación final
 
-The bounded MLP search, development-data refit, and one final evaluation of the reserved outer test are complete. The test was evaluated once after candidate selection; it was not used for tuning or iteration.
+La búsqueda acotada del MLP, el reajuste con datos de desarrollo y una evaluación final en la prueba externa reservada están completos. La prueba se evaluó una vez después de seleccionar el candidato; no se usó para ajustar ni iterar.
 
-## Evaluation boundary
+## Límite de la evaluación
 
-The inner training and validation partitions were combined as development data. The outer test was excluded from search. A three-fold `StratifiedGroupKFold(n_splits=3, shuffle=True, random_state=44)` search received development feature-group IDs. `GridSearchCV` selected by Average Precision and, with `refit=True`, fitted the winning pipeline on all development rows before the reserved test was evaluated once.
+Las particiones internas de entrenamiento y validación se combinaron como datos de desarrollo. La prueba externa se excluyó de la búsqueda. Una búsqueda de tres folds con `StratifiedGroupKFold(n_splits=3, shuffle=True, random_state=44)` recibió los identificadores de grupo de variables de desarrollo. `GridSearchCV` seleccionó por Average Precision y, con `refit=True`, ajustó el pipeline ganador con todas las filas de desarrollo antes de evaluar una vez la prueba reservada.
 
-The pipeline was `StandardScaler -> SMOTE(random_state=42) -> MLPClassifier`, with scaling and SMOTE fitted only within each CV training fold. Both candidates used ReLU, Adam, batch size 256, `max_iter=100`, `early_stopping=False`, and random state 42.
+El pipeline fue `StandardScaler -> SMOTE(random_state=42) -> MLPClassifier`, con el escalado y SMOTE ajustados solo dentro de cada fold de entrenamiento de la CV. Ambos candidatos usaron ReLU, Adam, tamaño de lote 256, `max_iter=100`, `early_stopping=False` y estado aleatorio 42.
 
-## Cross-validation results
+## Resultados de la validación cruzada
 
-| Candidate | `hidden_layer_sizes` | `alpha` | `learning_rate_init` | Mean CV Average Precision | Std. CV Average Precision | Folds |
+| Candidato | `hidden_layer_sizes` | `alpha` | `learning_rate_init` | Media del Average Precision en CV | Desv. estándar del Average Precision en CV | Folds |
 | --- | --- | ---: | ---: | ---: | ---: | ---: |
 | 1 | `(32,)` | `0.001` | `0.001` | `0.7889909900343617` | `0.016266031474164548` | 3 |
 | 2 | `(64, 32)` | `0.0001` | `0.001` | `0.7892942255438676` | `0.024821041864665654` | 3 |
 
-**Selected search winner:** `hidden_layer_sizes=(64, 32)`, `alpha=0.0001`, `learning_rate_init=0.001`.
+**Ganador seleccionado de la búsqueda:** `hidden_layer_sizes=(64, 32)`, `alpha=0.0001`, `learning_rate_init=0.001`.
 
-Candidate 2 has the higher mean CV Average Precision, but its advantage is tiny relative to fold variation. It is the search winner, not decisive evidence that its architecture is superior.
+El candidato 2 tiene la media de Average Precision en CV más alta, pero su ventaja es mínima en relación con la variación entre folds. Es el ganador de la búsqueda, no evidencia decisiva de que su arquitectura sea superior.
 
-## Final reserved-test evaluation
+## Evaluación final en la prueba reservada
 
-| Test rows | Test frauds | Average Precision | Precision | Recall | F2 |
+| Filas de prueba | Fraudes en prueba | Average Precision | Precisión | Recall | F2 |
 | ---: | ---: | ---: | ---: | ---: | ---: |
 | 56962 | 99 | 0.8203794692697799 | 0.7155172413793104 | 0.8383838383838383 | 0.810546875 |
 
-The test was evaluated once after selection. Average Precision uses `predict_proba`; precision, recall, F2, and confusion counts use default `predict` labels. No threshold tuning occurred.
+La prueba se evaluó una vez después de la selección. Average Precision usa `predict_proba`; la precisión, el recall, F2 y los recuentos de la matriz de confusión usan las etiquetas por defecto de `predict`. No hubo ajuste de umbral.
 
-Confusion matrix, with true labels as rows and predicted labels `[0, 1]` as columns:
+Matriz de confusión, con las etiquetas reales como filas y las etiquetas predichas `[0, 1]` como columnas:
 
-| True \ Predicted | 0 | 1 |
+| Real \ Predicho | 0 | 1 |
 | --- | ---: | ---: |
 | 0 | 56830 | 33 |
 | 1 | 16 | 83 |
 
-These are counts in the order TN `56830`, FP `33`, FN `16`, TP `83`.
+Estos son recuentos en el orden TN `56830`, FP `33`, FN `16`, TP `83`.
 
-## Interpretation and limitations
+## Interpretación y limitaciones
 
-- The CV scores are development-data estimates from a bounded two-candidate search, not an exhaustive optimum.
-- The outer-test result is one uncertain holdout estimate based on only 99 frauds. It does not establish current-fraud performance, production readiness, or performance beyond this two-day 2013 dataset.
-- The baseline tree models have validation-only results. They are **not directly comparable** with the MLP outer-test metrics because the evaluated partitions differ.
-- The notebook generated a prediction preview, but individual prediction rows are not reproduced in static documentation.
+- Las puntuaciones de CV son estimaciones con datos de desarrollo de una búsqueda acotada de dos candidatos, no un óptimo exhaustivo.
+- El resultado de la prueba externa es una única estimación incierta de holdout basada en solo 99 fraudes. No establece el rendimiento frente al fraude actual, la preparación para producción ni el rendimiento más allá de este dataset de dos días de 2013.
+- Los modelos de árbol de baseline tienen resultados solo de validación. **No son directamente comparables** con las métricas del MLP en la prueba externa, porque las particiones evaluadas son distintas.
+- El notebook generó una vista previa de predicciones, pero las filas de predicción individuales no se reproducen en la documentación estática.
 
-## Future work
+## Trabajo futuro
 
-- Cross-validate and tune the tree baselines if desired.
-- Select any operating threshold using development or validation data only.
-- Design a fair comparison that evaluates models on the same appropriate partitions and protocol.
-- Do not use the reserved outer test again for iteration.
+- Validar con validación cruzada y ajustar los baselines de árboles si se desea.
+- Seleccionar cualquier umbral operativo usando solo datos de desarrollo o de validación.
+- Diseñar una comparación justa que evalúe los modelos en las mismas particiones y con el mismo protocolo adecuado.
+- No volver a usar la prueba externa reservada para iterar.

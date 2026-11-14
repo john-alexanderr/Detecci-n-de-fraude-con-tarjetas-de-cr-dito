@@ -23,7 +23,7 @@
 | **1. Auditoría y EDA** | Verificación de esquema, tipos, nulos, duplicados y rangos de las 30 variables. Análisis de prevalencia, `Amount`, componentes PCA y tiempo relativo. | [eda_summary.md](reports/eda_summary.md) |
 | **2. Splits agrupados** | Las filas con entradas idénticas se mantienen juntas en una misma partición. Desarrollo: 227.845 filas (182.276 entrenamiento + 45.569 validación). Test reservado: 56.962 filas con 99 fraudes, nunca usado para ajustar, seleccionar ni tune. | [splitting.py](src/fraud_detection/splitting.py) |
 | **3. Baselines de árboles** | `StandardScaler → SMOTE → clasificador` ajustado solo con el entrenamiento interno; la validación conserva la prevalencia natural. | [baseline_validation.md](reports/baseline_validation.md) |
-| **4. MLP con CV agrupada** | Búsqueda de dos candidatos con `StratifiedGroupKFold` (3 folds, IDs de grupo) y `average_precision`. El ganador se reajustó con todos los datos de desarrollo y el test reservado se evaluó **una sola vez**. | [mlp_final_evaluation.md](reports/mlp_final_evaluation.md) |
+| **4. MLP con CV agrupada** | Búsqueda de dos candidatos con `StratifiedGroupKFold` (3 folds, IDs de grupo) y `average_precision`. El ganador se reajustó con todos los datos de desarrollo y la prueba reservada se evaluó **una sola vez**. | [mlp_final_evaluation.md](reports/mlp_final_evaluation.md) |
 
 ### Resultados de los baselines (validación, 79 fraudes)
 
@@ -40,7 +40,7 @@
 | `(32,)` · `alpha=1e-3` · `lr=1e-3` | 0.7890 | 0.0163 |
 | **`(64, 32)` · `alpha=1e-4` · `lr=1e-3` — elegido** | **0.7893** | 0.0248 |
 
-Evaluación final sobre el test reservado (56.962 filas, 99 fraudes), sin ajuste de umbral:
+Evaluación final sobre la prueba reservada (56.962 filas, 99 fraudes), sin ajuste de umbral:
 
 | Average Precision | Precisión | Recall | F2 |
 | ---: | ---: | ---: | ---: |
@@ -51,7 +51,7 @@ Evaluación final sobre el test reservado (56.962 filas, 99 fraudes), sin ajuste
 | **Legítima (0)** | 56.830 | 33 |
 | **Fraude (1)** | 16 | 83 |
 
-> Los baselines se evaluaron solo en validación y no son directamente comparables con la MLP, que se evaluó en el test. La estimación final descansa en apenas 99 fraudes: es evidencia incierta, no rendimiento de producción.
+> Los baselines se evaluaron solo en validación y no son directamente comparables con la MLP, que se evaluó en la prueba reservada. La estimación final descansa en apenas 99 fraudes: es evidencia incierta, no rendimiento de producción.
 
 ---
 
@@ -113,10 +113,10 @@ marimo edit notebooks/03_mlp_training_evaluation.py
 ```
 
 - **Notebook 01** descarga el CSV fijado si falta y ejecuta el análisis descriptivo.
-- **Notebook 02** crea los splits y entrena los baselines solo al presionar los botones.
-- **Notebook 03** no hace nada hasta presionar **Run bounded MLP search and final test**; la corrida completa tarda unos 15 minutos en CPU.
+- **Notebook 02** crea las particiones y entrena los baselines solo al presionar los botones.
+- **Notebook 03** no hace nada hasta presionar **Ejecutar la búsqueda acotada del MLP y la prueba final**; la corrida completa tarda unos 15 minutos en CPU.
 
-> Re-ejecutar el Notebook 03 vuelve a evaluar el test reservado. Hacerlo solo para verificación deliberada: el test no debe usarse para iterar.
+> Re-ejecutar el Notebook 03 vuelve a evaluar la prueba reservada. Hacerlo solo para verificación deliberada: la prueba no debe usarse para iterar.
 
 ---
 

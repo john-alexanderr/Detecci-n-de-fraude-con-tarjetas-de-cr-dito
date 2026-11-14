@@ -22,7 +22,7 @@ def test_schema_accepts_expected_numeric_inputs_and_binary_target():
 def test_schema_rejects_missing_or_reordered_columns():
     frame = make_valid_frame().drop(columns="Amount")
 
-    with pytest.raises(ValueError, match="Unexpected dataset columns or order"):
+    with pytest.raises(ValueError, match="Columnas del dataset inesperadas"):
         validate_credit_card_schema(frame)
 
 
@@ -30,7 +30,7 @@ def test_schema_rejects_non_numeric_inputs():
     frame = make_valid_frame()
     frame["Time"] = ["first", "second"]
 
-    with pytest.raises(TypeError, match="Input columns must be numeric"):
+    with pytest.raises(TypeError, match="deben ser numéricas"):
         validate_credit_card_schema(frame)
 
 
@@ -39,5 +39,5 @@ def test_schema_rejects_invalid_target_values(target_values):
     frame = make_valid_frame()
     frame["Class"] = target_values
 
-    with pytest.raises(ValueError, match="Class target must be non-null"):
+    with pytest.raises(ValueError, match="no debe tener valores nulos"):
         validate_credit_card_schema(frame)

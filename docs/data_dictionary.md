@@ -1,24 +1,24 @@
-# Data Dictionary
+# Diccionario de datos
 
-## Source and unit of analysis
+## Origen y unidad de análisis
 
-- **Source:** [Kaggle Credit Card Fraud Detection](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud), dataset handle `mlg-ulb/creditcardfraud/versions/3`.
-- **Unit:** One transaction per row.
-- **Task:** Binary classification of `Class`.
-- **Reported source scope:** 284,807 transactions from two days in September 2013; 492 fraud labels.
-- **Local copy:** `data/raw/creditcard.csv`, downloaded only if absent and ignored by Git.
+- **Origen:** [Kaggle Credit Card Fraud Detection](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud), identificador del dataset `mlg-ulb/creditcardfraud/versions/3`.
+- **Unidad:** Una transacción por fila.
+- **Tarea:** Clasificación binaria de `Class`.
+- **Alcance reportado del origen:** 284,807 transacciones de dos días de septiembre de 2013; 492 etiquetas de fraude.
+- **Copia local:** `data/raw/creditcard.csv`, se descarga solo si no existe y Git la ignora.
 
-## Columns
+## Columnas
 
-| Column(s) | Role | Meaning and limitations |
+| Columna(s) | Rol | Significado y limitaciones |
 | --- | --- | --- |
-| `Time` | Numeric input | Seconds elapsed since the first transaction. It is not a calendar timestamp and does not identify clock hour, weekday, or seasonality. |
-| `V1`–`V28` | Numeric inputs | Anonymized PCA-transformed features. Their original business meanings are not provided. |
-| `Amount` | Numeric input | Transaction amount; it is not a complete measure of fraud loss or business cost. |
-| `Class` | Binary target | `0` = legitimate, `1` = fraud. |
+| `Time` | Entrada numérica | Segundos transcurridos desde la primera transacción. No es una marca de tiempo calendario y no identifica la hora del reloj, el día de la semana ni la estacionalidad. |
+| `V1`–`V28` | Entradas numéricas | Variables anonimizadas transformadas por PCA. No se proporciona su significado de negocio original. |
+| `Amount` | Entrada numérica | Importe de la transacción; no es una medida completa de la pérdida por fraude ni del costo de negocio. |
+| `Class` | Objetivo binario | `0` = legítima, `1` = fraude. |
 
-There are 30 numeric inputs and one target. The expected source column order is `Time`, `V1`–`V28`, `Amount`, `Class`.
+Hay 30 entradas numéricas y un objetivo. El orden esperado de las columnas de origen es `Time`, `V1`–`V28`, `Amount`, `Class`.
 
-## Known data-quality findings
+## Hallazgos conocidos de calidad de datos
 
-The preserved profile reports no missing values, 1,081 exact duplicate rows, and zero exact-feature groups with conflicting targets. Candidate sentinel-like values `Time = 999` (2 rows) and `Amount = 999` (7 rows) are unconfirmed; they must not be automatically recoded. IQR flags indicate values to inspect, not records to delete or cap. See the [EDA report](../reports/eda_summary.md) for script-backed detail.
+El perfil conservado no reporta valores faltantes, 1,081 filas duplicadas exactas y cero grupos de variables idénticas con objetivos en conflicto. Los posibles valores tipo centinela `Time = 999` (2 filas) y `Amount = 999` (7 filas) no están confirmados; no se deben recodificar automáticamente. Las marcas IQR indican valores para inspeccionar, no registros para eliminar o recortar. Consulte el [informe de EDA](../reports/eda_summary.md) para ver el detalle respaldado por scripts.

@@ -1,4 +1,4 @@
-"""Bounded grouped-CV search and final holdout evaluation for an MLP."""
+"""Búsqueda acotada con validación cruzada agrupada y evaluación final en la partición de prueba reservada para un MLP."""
 
 from __future__ import annotations
 
@@ -37,7 +37,7 @@ MLP_PARAMETER_GRID = (
 
 @dataclass(frozen=True)
 class CandidateCVSummary:
-    """Cross-validation metrics for one configured MLP candidate."""
+    """Métricas de validación cruzada para un candidato MLP configurado."""
 
     params: dict[str, object]
     mean_average_precision: float
@@ -47,7 +47,7 @@ class CandidateCVSummary:
 
 @dataclass(frozen=True)
 class MLPSearchResult:
-    """Selected estimator and the bounded search's cross-validation summary."""
+    """Estimador seleccionado y resumen de validación cruzada de la búsqueda acotada."""
 
     best_params: dict[str, object]
     best_average_precision: float
@@ -57,7 +57,7 @@ class MLPSearchResult:
 
 @dataclass(frozen=True)
 class MLPTestEvaluation:
-    """One final evaluation on the reserved outer test partition."""
+    """Una evaluación final sobre la partición de prueba externa reservada."""
 
     row_count: int
     fraud_count: int
@@ -73,7 +73,7 @@ class MLPTestEvaluation:
 
 
 def build_mlp_pipeline() -> Pipeline:
-    """Build a fold-local scaler, sampler, and MLP pipeline."""
+    """Construye un pipeline local a cada fold con escalador, muestreador y MLP."""
     return Pipeline(
         steps=[
             ("scaler", StandardScaler()),
@@ -94,7 +94,7 @@ def build_mlp_pipeline() -> Pipeline:
 
 
 def build_mlp_search() -> GridSearchCV:
-    """Create the documented two-candidate, three-fold grouped search."""
+    """Crea la búsqueda agrupada documentada de dos candidatos y tres folds."""
     parameter_grid = [
         {key: list(values) for key, values in candidate.items()}
         for candidate in MLP_PARAMETER_GRID
@@ -114,7 +114,7 @@ def build_mlp_search() -> GridSearchCV:
 def combine_development_partitions(
     partitions: GroupedPartitions,
 ) -> tuple[pd.DataFrame, pd.Series, np.ndarray]:
-    """Combine only inner training and validation rows for grouped CV."""
+    """Combina solo las filas de entrenamiento y validación internas para la validación cruzada agrupada."""
     features = pd.concat(
         [partitions.x_fit, partitions.x_validation],
         axis=0,
@@ -127,7 +127,9 @@ def combine_development_partitions(
         [partitions.groups_fit, partitions.groups_validation]
     )
     if not (len(features) == len(target) == len(groups)):
-        raise ValueError("Development features, target, and groups must align.")
+        raise ValueError(
+            "Las variables de entrada, el objetivo y los grupos de desarrollo deben estar alineados."
+        )
     return features, target, groups
 
 
@@ -140,7 +142,7 @@ def _unprefixed_params(params: dict[str, object]) -> dict[str, object]:
 
 
 def run_mlp_search(partitions: GroupedPartitions) -> MLPSearchResult:
-    """Tune on combined development data, then refit the selected pipeline."""
+    """Ajusta los hiperparámetros con los datos de desarrollo combinados y luego reajusta el pipeline seleccionado."""
     x_development, y_development, groups_development = (
         combine_development_partitions(partitions)
     )
@@ -179,13 +181,15 @@ def evaluate_mlp_test(
     y_test: pd.Series,
     preview_rows: int = 10,
 ) -> MLPTestEvaluation:
-    """Score the reserved test once using probabilities and default labels."""
+    """Evalúa la prueba reservada una sola vez usando probabilidades y etiquetas por defecto."""
     if len(x_test) != len(y_test):
-        raise ValueError("Test features and target must contain the same rows.")
+        raise ValueError(
+            "Las variables de entrada y el objetivo de prueba deben contener las mismas filas."
+        )
     if len(y_test) == 0:
-        raise ValueError("The reserved test partition must not be empty.")
+        raise ValueError("La partición de prueba reservada no debe estar vacía.")
     if preview_rows < 0:
-        raise ValueError("preview_rows must be non-negative.")
+        raise ValueError("preview_rows debe ser no negativo.")
 
     actual = np.asarray(y_test)
     probabilities = best_estimator.predict_proba(x_test)[:, 1]

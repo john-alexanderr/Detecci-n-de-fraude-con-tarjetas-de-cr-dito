@@ -30,13 +30,13 @@ def _():
 @app.cell
 def _(mo):
     mo.md(r"""
-    # 02 — Data preparation and baseline models
+    # 02 — Preparación de datos y modelos base
 
-    This app retains exact-feature duplicates but keeps each feature signature within one partition. A button creates the grouped outer holdout and separate grouped validation split; another button triggers model fitting. **Opening the app does not split the full dataset, fit a model, or run SMOTE.**
+    Esta aplicación conserva los duplicados exactos de variables, pero mantiene cada grupo de variables idénticas dentro de una sola partición. Un botón crea la partición externa reservada agrupada y la división de validación agrupada; otro botón inicia el ajuste de los modelos. **Abrir la aplicación no divide el dataset completo, no ajusta ningún modelo y no ejecuta SMOTE.**
 
-    ## Why group exact input features?
+    ## ¿Por qué agrupar las variables de entrada exactas?
 
-    A conventional stratified row split can place identical feature rows on both sides. For the preserved conventional split, 227,845 training rows and 56,962 test rows contained 394 and 98 frauds, but 293 exact-feature signatures crossed the split. This benchmark instead hashes `X` only, then uses `StratifiedGroupKFold` to approximate class balance while assigning each feature group wholly to one partition. This is a learning comparison, not evidence of production or future-time generalization.
+    Una división convencional de filas con estratificación puede colocar filas con variables idénticas en ambos lados. En la división convencional preservada, 227,845 filas de entrenamiento y 56,962 filas de prueba contenían 394 y 98 fraudes, respectivamente, pero 293 combinaciones exactas de variables cruzaban la división. En cambio, este benchmark calcula un hash solo de `X` y luego usa `StratifiedGroupKFold` para aproximar el equilibrio de clases, asignando cada grupo de variables por completo a una sola partición. Esta es una comparación de aprendizaje, no evidencia de generalización a producción ni a tiempos futuros.
     """)
     return
 
@@ -51,7 +51,7 @@ def _(FEATURE_COLUMNS, load_dataset):
 
 @app.cell
 def _(mo):
-    partition_run_button = mo.ui.run_button(label="Create grouped partitions")
+    partition_run_button = mo.ui.run_button(label="Crear particiones agrupadas")
     partition_run_button
     return (partition_run_button,)
 
@@ -60,7 +60,10 @@ def _(mo):
 def _(create_grouped_partitions, features, mo, partition_run_button, target):
     mo.stop(
         not partition_run_button.value,
-        mo.md("Click the button above to prepare the grouped training, validation, and reserved test partitions."),
+        mo.md(
+            "Hacer clic en el botón de arriba para preparar las particiones agrupadas "
+            "de entrenamiento, validación y prueba reservada."
+        ),
     )
     partitions = create_grouped_partitions(features, target)
     return (partitions,)
@@ -86,7 +89,7 @@ def _(partitions, pd):
                 100 * partitions.y_test.mean(),
             ],
         },
-        index=["model training", "validation", "reserved outer test"],
+        index=["entrenamiento del modelo", "validación", "prueba externa reservada"],
     )
     partition_summary
     return (partition_summary,)
@@ -95,9 +98,10 @@ def _(partitions, pd):
 @app.cell
 def _(mo):
     outer_test_note = (
-        "Outer-test class counts are shown only to verify stratification. "
-        "The test partition is not used to fit preprocessing, select features, "
-        "models, or thresholds, or to score models."
+        "Los recuentos de clases de la prueba externa solo se muestran para verificar "
+        "la estratificación. La partición de prueba no se usa para ajustar el "
+        "preprocesamiento, seleccionar variables, modelos o umbrales, ni para "
+        "evaluar modelos."
     )
     mo.md(outer_test_note)
     return
@@ -120,18 +124,21 @@ def _(grouped_overlap_count, mo, partitions):
         ),
     }
     assert all(overlap == 0 for overlap in group_overlap_summary.values())
-    mo.md(f"Exact-feature group overlap counts: `{group_overlap_summary}`")
+    mo.md(
+        "Recuentos de superposición de grupos de variables exactas: "
+        f"`{group_overlap_summary}`"
+    )
     return (group_overlap_summary,)
 
 
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## Leak-safe preprocessing
+    ## Preprocesamiento sin fuga de información
 
-    The baseline pipeline order is **`StandardScaler -> SMOTE(random_state=42) -> classifier`**. Both scaling and resampling are fitted only on `model training`; validation and the reserved outer test retain natural prevalence. SMOTE is distance-based, so all 30 numeric inputs are standardized. Trees do not require scaling themselves, but use the same pipeline to keep this comparison's preprocessing boundary consistent.
+    El orden del pipeline base es **`StandardScaler -> SMOTE(random_state=42) -> classifier`**. Tanto el escalado como el remuestreo se ajustan solo con la partición de entrenamiento del modelo; la validación y la prueba externa reservada mantienen la prevalencia natural. SMOTE se basa en distancias, por lo que se estandarizan las 30 variables de entrada numéricas. Los árboles no necesitan escalado por sí mismos, pero usan el mismo pipeline para mantener coherente el límite de preprocesamiento de esta comparación.
 
-    The classifier settings match the preserved benchmark: Decision Tree (`random_state=42`), Random Forest (`n_estimators=200`, `random_state=42`, `n_jobs=-1`), and AdaBoost (`random_state=42`).
+    La configuración de los clasificadores coincide con el benchmark preservado: Decision Tree (`random_state=42`), Random Forest (`n_estimators=200`, `random_state=42`, `n_jobs=-1`) y AdaBoost (`random_state=42`).
     """)
     return
 
@@ -139,7 +146,7 @@ def _(mo):
 @app.cell
 def _(mo):
     baseline_run_button = mo.ui.run_button(
-        label="Train baselines and score validation"
+        label="Entrenar los modelos base y evaluar la validación"
     )
     baseline_run_button
     return (baseline_run_button,)
@@ -149,7 +156,10 @@ def _(mo):
 def _(baseline_run_button, mo, partitions, pd, run_baseline_validation):
     mo.stop(
         not baseline_run_button.value,
-        mo.md("Click the button above to fit the three baselines and score validation."),
+        mo.md(
+            "Hacer clic en el botón de arriba para ajustar los tres modelos base "
+            "y evaluar la validación."
+        ),
     )
     baseline_results, confusion_matrices = run_baseline_validation(
         partitions.x_fit,
@@ -158,7 +168,10 @@ def _(baseline_run_button, mo, partitions, pd, run_baseline_validation):
         partitions.y_validation,
     )
     for model_name, matrix in confusion_matrices.items():
-        print(f"{model_name} confusion matrix (rows=true, columns=predicted; labels 0, 1):")
+        print(
+            f"Matriz de confusión de {model_name} "
+            "(filas = real, columnas = predicho; etiquetas 0, 1):"
+        )
         print(pd.DataFrame(matrix, index=[0, 1], columns=[0, 1]))
     baseline_results
     return baseline_results, confusion_matrices
@@ -167,13 +180,13 @@ def _(baseline_run_button, mo, partitions, pd, run_baseline_validation):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## Proposed MLP — not trained or validated
+    ## MLP: completado en el Notebook 03
 
-    The hypothesis is 30 inputs, hidden layers `(64, 32)`, ReLU, binary log-loss, Adam with `learning_rate_init=1e-3`, `alpha=1e-4`, batch size 256, `max_iter=100`, and seed 42. This is an unvalidated starting design, not a result. No MLP training or outer-test scoring is included in this migration. Do not enable early stopping inside a post-SMOTE estimator; validation belongs on the separate natural-prevalence partition.
+    El MLP ya se entrenó y evaluó en el [Notebook 03](03_mlp_training_evaluation.py): comparó dos candidatos con validación cruzada agrupada y evaluó una sola vez la prueba reservada. El candidato ganador usa capas ocultas `(64, 32)`, ReLU, log-loss binaria, Adam con `learning_rate_init=1e-3`, `alpha=1e-4`, tamaño de lote 256, `max_iter=100` y semilla 42. La parada temprana permanece desactivada dentro del pipeline posterior a SMOTE porque la validación corresponde a la partición separada con prevalencia natural. Los resultados exactos están en el [informe del MLP](../reports/mlp_final_evaluation.md).
 
-    ## Interpretation boundary
+    ## Límite de interpretación
 
-    The preserved comparison has one validation split with 79 frauds. Random Forest is the strongest provisional balance on that split; AdaBoost has the highest recall but a severe false-alert burden. No cross-validation, threshold tuning, hyperparameter tuning, or final test result exists. See [the exact validation report](../reports/baseline_validation.md).
+    La comparación preservada tiene una sola división de validación con 79 fraudes. Random Forest logra el mejor equilibrio provisional en esa división; AdaBoost tiene el recall (exhaustividad) más alto, pero una carga severa de falsas alertas. Para estos baselines no existe validación cruzada, ajuste de umbral ni ajuste de hiperparámetros; la prueba reservada se evaluó solo con el MLP. Consultar [el informe exacto de validación](../reports/baseline_validation.md).
     """)
     return
 

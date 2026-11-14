@@ -27,37 +27,39 @@ def _():
 @app.cell
 def _(mo):
     mo.md(r"""
-    # 03 — MLP grouped cross-validation and final evaluation
+    # 03 — Validación cruzada agrupada del MLP y evaluación final
 
-    The documented MLP cross-validation, development-data training/refit, and one final reserved-test evaluation are complete. Opening this app does not load the CSV, start a search, fit a model, or score the reserved test. The run button below would repeat the search and score the reserved test again; do not use it for further iteration. Review the recorded results and evaluation boundary below.
+    La validación cruzada documentada del MLP, el entrenamiento y reajuste con los datos de desarrollo y una evaluación final en la prueba reservada ya están completos. Abrir esta aplicación no carga el CSV, no inicia una búsqueda, no ajusta un modelo ni evalúa la prueba reservada. El botón de abajo repetiría la búsqueda y volvería a evaluar la prueba reservada; no usarlo para seguir iterando. Revisar los resultados registrados y el límite de la evaluación que aparecen abajo.
 
-    ## Why an MLP, scaling, and SMOTE?
+    ## ¿Por qué un MLP, escalado y SMOTE?
 
-    The 30 numeric inputs have very different scales, while an MLP is sensitive to feature scale. The pipeline therefore applies **`StandardScaler -> SMOTE(random_state=42) -> MLPClassifier`**. The imbalanced-learn pipeline is inside cross-validation, so scaling and resampling are fitted only on each fold's training data; each validation fold stays at natural prevalence. Early stopping is disabled because its internal validation split would be taken from the post-SMOTE training data.
+    Las 30 variables de entrada numéricas tienen escalas muy distintas, y un MLP es sensible a la escala de las variables. Por eso el pipeline aplica **`StandardScaler -> SMOTE(random_state=42) -> MLPClassifier`**. El pipeline de imbalanced-learn está dentro de la validación cruzada, así que el escalado y el remuestreo se ajustan solo con los datos de entrenamiento de cada fold; cada fold de validación mantiene la prevalencia natural. La parada temprana está desactivada porque su división de validación interna se tomaría de los datos de entrenamiento posteriores a SMOTE.
 
-    ## Bounded grouped search
+    ## Búsqueda agrupada acotada
 
-    The inner model-training and validation partitions are combined as development data; the reserved outer test is not included. A `StratifiedGroupKFold(n_splits=3, shuffle=True, random_state=44)` search receives the development group IDs, keeping exact-feature duplicates together. Three folds provide a practical initial estimate with 393 development frauds; they do not make the result exhaustive.
+    Las particiones internas de entrenamiento del modelo y validación se combinan como datos de desarrollo; la prueba externa reservada no se incluye. La búsqueda con `StratifiedGroupKFold(n_splits=3, shuffle=True, random_state=44)` recibe los identificadores de grupo de desarrollo, lo que mantiene juntos los duplicados exactos de variables. Tres folds ofrecen una estimación inicial práctica con 393 fraudes de desarrollo; no hacen que el resultado sea exhaustivo.
 
-    The two candidates differ in network size and L2 regularization:
+    Los dos candidatos difieren en el tamaño de la red y la regularización L2:
 
-    | Candidate | Hidden layers | `alpha` | `learning_rate_init` |
+    | Candidato | Capas ocultas | `alpha` | `learning_rate_init` |
     | --- | --- | ---: | ---: |
     | 1 | `(32,)` | `1e-3` | `1e-3` |
     | 2 | `(64, 32)` | `1e-4` | `1e-3` |
 
-    Both use ReLU, Adam, batch size 256, `max_iter=100`, `early_stopping=False`, and seed 42. Search selection uses mean fold Average Precision. This is a **bounded initial search**, not an exhaustive optimum.
+    Ambos usan ReLU, Adam, tamaño de lote 256, `max_iter=100`, `early_stopping=False` y semilla 42. La selección de la búsqueda usa el Average Precision medio de los folds. Esta es una **búsqueda inicial acotada**, no un óptimo exhaustivo.
 
-    ## Final-test boundary
+    ## Límite de la prueba final
 
-    After cross-validation, `GridSearchCV(refit=True)` fits the selected pipeline on all development rows. The outer test is then scored once and never used to select parameters or tune a threshold. Average Precision uses `predict_proba`; precision, recall, F2, and confusion counts use the estimator's default `predict` labels. The test contains 56,962 rows and only 99 frauds, so its metrics are one final holdout estimate, not proof of production performance.
+    Después de la validación cruzada, `GridSearchCV(refit=True)` ajusta el pipeline seleccionado con todas las filas de desarrollo. Luego, la prueba externa se evalúa una sola vez y nunca se usa para seleccionar parámetros ni ajustar un umbral. Average Precision usa `predict_proba`; la precisión, el recall (exhaustividad), la métrica F2 y los recuentos de la matriz de confusión usan las etiquetas por defecto de `predict` del estimador. La prueba contiene 56,962 filas y solo 99 fraudes, así que sus métricas son una única estimación final sobre datos reservados, no una prueba del rendimiento en producción.
     """)
     return
 
 
 @app.cell
 def _(mo):
-    mlp_run_button = mo.ui.run_button(label="Run bounded MLP search and final test")
+    mlp_run_button = mo.ui.run_button(
+        label="Ejecutar la búsqueda acotada del MLP y la prueba final"
+    )
     mlp_run_button
     return (mlp_run_button,)
 
@@ -75,8 +77,8 @@ def _(
     mo.stop(
         not mlp_run_button.value,
         mo.md(
-            "Click the button above to run grouped cross-validation and then "
-            "score the reserved test once."
+            "Hacer clic en el botón de arriba para ejecutar la validación cruzada "
+            "agrupada y luego evaluar la prueba reservada una sola vez."
         ),
     )
     dataset = load_dataset()
@@ -95,7 +97,7 @@ def _(
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## Search results
+    ## Resultados de la búsqueda
     """)
     return
 
@@ -151,7 +153,7 @@ def _(mlp_search_result, pd):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## One final reserved-test evaluation
+    ## Una evaluación final en la prueba reservada
     """)
     return
 
@@ -200,11 +202,11 @@ def _(mlp_test_result):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## Interpretation guide
+    ## Guía de interpretación
 
-    The completed three-fold search selected candidate 2, `(64, 32)` with `alpha=0.0001` and `learning_rate_init=0.001`, with mean CV Average Precision `0.7892942255438676` and standard deviation `0.024821041864665654`. Candidate 1, `(32,)` with `alpha=0.001`, scored mean `0.7889909900343617` and standard deviation `0.016266031474164548`. Candidate 2 is the search winner, but its mean advantage is tiny relative to fold variation and does not establish decisive architecture superiority.
+    La búsqueda completada con tres folds seleccionó el candidato 2, `(64, 32)` con `alpha=0.0001` y `learning_rate_init=0.001`, con un Average Precision medio de validación cruzada de `0.7892942255438676` y una desviación estándar de `0.024821041864665654`. El candidato 1, `(32,)` con `alpha=0.001`, obtuvo una media de `0.7889909900343617` y una desviación estándar de `0.016266031474164548`. El candidato 2 gana la búsqueda, pero su ventaja media es mínima frente a la variación entre folds y no demuestra una superioridad decisiva de la arquitectura.
 
-    After refitting the selected pipeline on all development data, the reserved test was evaluated once: Average Precision `0.8203794692697799`, precision `0.7155172413793104`, recall `0.8383838383838383`, and F2 `0.810546875` over 56,962 rows with 99 frauds. No threshold tuning occurred; `predict` supplies default decision labels, not a business-approved operating point. This is an uncertain holdout estimate, not evidence of current-fraud or production performance. Do not use the outer test again for iteration. The tree baselines have validation-only results and are not directly comparable because they use a different partition. See the [completed MLP evaluation report](../reports/mlp_final_evaluation.md) for the full results and confusion matrix.
+    Después de reajustar el pipeline seleccionado con todos los datos de desarrollo, la prueba reservada se evaluó una sola vez: Average Precision `0.8203794692697799`, precisión `0.7155172413793104`, recall (exhaustividad) `0.8383838383838383` y F2 `0.810546875` sobre 56,962 filas con 99 fraudes. No hubo ajuste de umbral; `predict` usa las etiquetas de decisión por defecto, no un punto de operación aprobado por el negocio. Esta es una estimación incierta sobre datos reservados, no evidencia del rendimiento con fraude actual ni en producción. No volver a usar la prueba externa para iterar. Los modelos base de árboles tienen resultados solo de validación y no son directamente comparables porque usan una partición distinta. Consultar el [informe completo de evaluación del MLP](../reports/mlp_final_evaluation.md) para ver todos los resultados y la matriz de confusión.
     """)
     return
 

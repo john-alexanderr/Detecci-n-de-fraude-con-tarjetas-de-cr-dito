@@ -1,4 +1,4 @@
-"""Training and validation-only metric helpers."""
+"""Utilidades de métricas solo para entrenamiento y validación."""
 
 import pandas as pd
 from sklearn.metrics import (
@@ -17,7 +17,7 @@ def summarize_predictions(
     y_score,
     y_pred,
 ) -> dict[str, float | list[list[int]]]:
-    """Summarize probability ranking and default-threshold predictions."""
+    """Resume el ranking de probabilidades y las predicciones con el umbral por defecto."""
     matrix = confusion_matrix(y_true, y_pred, labels=[0, 1])
     return {
         "average_precision": float(average_precision_score(y_true, y_score)),
@@ -34,7 +34,7 @@ def run_baseline_validation(
     x_validation: pd.DataFrame,
     y_validation: pd.Series,
 ) -> tuple[pd.DataFrame, dict[str, list[list[int]]]]:
-    """Fit baselines on training data and score natural-prevalence validation."""
+    """Ajusta los modelos base con datos de entrenamiento y los evalúa en validación con prevalencia natural."""
     result_rows = []
     confusion_matrices: dict[str, list[list[int]]] = {}
 
