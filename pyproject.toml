@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "credit-card-fraud-academic-benchmark"
+version = "0.1.0"
+description = "A reproducible academic benchmark for credit-card fraud detection"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "kagglehub==1.0.3",
+    "numpy==2.5.4",
+    "pandas==3.1.1",
+    "matplotlib==3.11.2",
+    "seaborn==0.13.2",
+    "scikit-learn==1.9.1",
+    "imbalanced-learn==0.14.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "marimo==0.23.16",
+    "pytest>=8,<10",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-ra"

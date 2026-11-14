@@ -1,5 +1,7 @@
 # EDA Report: Credit Card Fraud Dataset
 
+> **Scope:** This report preserves the exact values from the full-dataset descriptive pre-model audit. Those historical diagnostics are retained for provenance and are not evidence for selecting features, transformations, models, or thresholds. The current EDA app uses the full source for inventory and to create the grouped split; after an explicit split action, all model-relevant plots and interpretations use the grouped development partition only. No separate outer-test metrics are reported or scored here.
+
 ## Executive Summary
 
 - The dataset contains 284,807 rows and 31 columns; retain the 1,081 exact duplicate rows during this descriptive audit, as there are no feature-conflicting-target groups (`eda-profiler.shape={"columns":31,"rows":284807}`; `eda-profiler.duplicates.exact=1081`; `eda-profiler.duplicates.feature_conflicting_targets=0`).

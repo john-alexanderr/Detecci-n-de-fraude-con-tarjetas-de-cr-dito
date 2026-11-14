@@ -56,43 +56,59 @@ The dataset therefore supports a historical benchmark, not claims that a model i
 
 ## Learning workflow
 
-Work through the notebooks in order:
+The project uses two Marimo applications, kept as ordinary Python files for review and version control:
 
-- [01 — Dataset understanding and EDA](notebooks/01_dataset_understanding_eda.ipynb): inspect the pinned dataset, its integrity and class imbalance, then explore univariate, bivariate, multivariate, relative-time, and outlier views.
-- [02 — Data preparation and baselines](notebooks/02_data_preparation_baselines.ipynb): compare a conventional stratified split with a duplicate-group-aware holdout, define train-only preprocessing, and provide baseline evaluation code.
+1. [01 — Dataset understanding and EDA](notebooks/01_dataset_understanding_eda.py) audits the pinned dataset and explores target prevalence, amount and PCA distributions, class associations, correlation, relative elapsed time, and outliers.
+2. [02 — Data preparation and baselines](notebooks/02_data_preparation_baselines.py) creates grouped outer and inner holdouts, explains train-only preprocessing, and offers a button-triggered baseline comparison.
 
-See the [EDA summary](reports/eda_summary.md) for the already-collected diagnostic findings and their limitations.
+The detailed [EDA report](reports/eda_summary.md) preserves the collected diagnostic findings. The [baseline validation report](reports/baseline_validation.md) preserves the exact prior metrics and confusion matrices; opening the Marimo app does not retrain models.
 
-The notebooks use KaggleHub to retrieve dataset version 3 and copy only `creditcard.csv` into `data/raw/` when that file is not already present. The raw CSV is ignored by Git and must not be committed. Check Kaggle's usage terms before redistributing the data. KaggleHub may require account setup depending on your environment; do not store credentials in this repository.
+KaggleHub retrieves dataset handle `mlg-ulb/creditcardfraud/versions/3` only when `data/raw/creditcard.csv` is absent, and copies only that CSV into `data/raw/`. The raw data directory is ignored by Git; the CSV must not be committed. Check Kaggle's usage terms before redistributing the data. KaggleHub may require account setup depending on your environment; do not store credentials in this repository.
 
 ## Setup and run
 
-From the repository root, create an environment and install the pinned analysis dependencies:
+From the repository root, create an environment and install the project and development tools:
+
+Python 3.12 or newer is required.
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python3 -m pip install --upgrade pip
-python3 -m pip install -r requirements.txt
+python3 -m pip install -e '.[dev]'
 ```
 
-Install a notebook interface separately, then start it from the repository root:
+Run the lightweight tests and open either app in the Marimo editor:
 
 ```bash
-python3 -m pip install jupyterlab
-jupyter lab
+python3 -m pytest
+marimo edit notebooks/01_dataset_understanding_eda.py
+marimo edit notebooks/02_data_preparation_baselines.py
 ```
 
-Run the two linked notebooks from top to bottom. The first notebook performs the version-pinned download only if the local raw CSV is absent. Notebook 02 reports a preliminary comparison of Decision Tree, Random Forest, and AdaBoost on an internal validation partition; the outer test set remains untouched. Cross-validation, hyperparameter tuning, MLP training, and final test evaluation remain part of the next phase.
+Notebook 01 downloads the pinned CSV if needed and performs descriptive analysis. Notebook 02 loads the local data on open, then gates grouped split preparation behind **Create grouped partitions** and model fitting/SMOTE behind **Train baselines and score validation**. The training action fits Decision Tree, Random Forest, and AdaBoost on the training subset only; validation stays at natural prevalence. The outer test set is not scored. Use `make eda`, `make baselines`, and `make test` as shortcuts.
+
+## Project map
+
+```text
+docs/                 Business framing, data, architecture, methodology, model card
+data/raw/             Local Kaggle CSV (ignored); .gitkeep tracks the empty directory
+notebooks/            Two Marimo Python applications
+reports/              Preserved EDA and baseline validation evidence
+src/fraud_detection/  Data validation, grouped splits, pipelines, plots, metrics
+tests/                Lightweight synthetic-data tests; no downloads or model fitting
+```
 
 ## Data quality and evaluation principles
 
-Before preprocessing or modeling, preserve the downloaded source file and document its provenance. Audit its shape, expected columns and types, missingness, exact duplicates, label values and class counts, feature ranges, and temporal ordering. Do not silently remove or rewrite anomalous rows during the initial audit.
+Preserve the downloaded source file and document its provenance. Audit the expected columns and types, missingness, exact duplicates, label values, feature ranges, and relative ordering. Do not silently delete, cap, or rewrite anomalous rows during this descriptive audit. `Time` is elapsed seconds rather than calendar time, and `V1`–`V28` are anonymized PCA inputs without direct business meaning.
 
-For evaluation, keep validation and test data at the natural class prevalence. Any resampling or learned preprocessing must be fitted only on the training partition. A chronological split is preferable for a future-facing experiment, but two days of data provide weak evidence about temporal generalization. Report that limitation rather than presenting the split as production validation.
+The current evaluation holds identical input-feature groups together in both the outer and inner split. `StandardScaler -> SMOTE -> classifier` is fitted only on the model-training subset; validation and test retain natural prevalence. Outer-test class counts are displayed only to verify stratification: test rows are not used to fit preprocessing, select features/models/thresholds, or score models. No cross-validation, threshold tuning, MLP training, or outer-test result exists. The two-day 2013 dataset cannot establish current or production performance.
 
-## Current scope
+## Documentation
 
-1. Establish the business framing and the dataset's supported claims and limitations.
-2. Download and audit the dataset, recording its provenance and quality findings in Notebook 01.
-3. Prepare a duplicate-group-aware holdout and run preliminary baselines on validation in Notebook 02; cross-validation, MLP training, and final test evaluation remain subsequent work.
+- [Business requirements](docs/business_requirements.md)
+- [Data dictionary](docs/data_dictionary.md)
+- [Architecture](docs/architecture.md)
+- [Methodology](docs/methodology.md)
+- [Model card](docs/model_card.md)
