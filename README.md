@@ -66,7 +66,7 @@ Evaluación final sobre el test reservado (56.962 filas, 99 fraudes), sin ajuste
 | Variables | 30 numéricas: `Time`, `Amount` y `V1`–`V28` (PCA anonimizado) |
 | Objetivo | `Class` (1 = fraude, 0 = legítima) |
 
-La primera ejecución del Notebook 01 descarga el CSV vía KaggleHub en `data/raw/creditcard.csv`. El dato crudo está ignorado por Git y **no debe commitearse**. KaggleHub puede requerir una cuenta de Kaggle; nunca guardes credenciales en el repositorio.
+La primera ejecución del Notebook 01 descarga el CSV vía KaggleHub en `data/raw/creditcard.csv`. El dato crudo está ignorado por Git y **no debe commitearse**. KaggleHub puede requerir una cuenta de Kaggle; nunca guardar credenciales en el repositorio.
 
 ---
 
@@ -104,7 +104,7 @@ python3 -m pip install -e '.[dev]'    # o: make install
 python3 -m pytest                     # o: make test
 ```
 
-Abrí las aplicaciones Marimo como archivos Python comunes:
+Abrir las aplicaciones Marimo como archivos Python comunes:
 
 ```bash
 marimo edit notebooks/01_dataset_understanding_eda.py    # make eda
@@ -116,7 +116,7 @@ marimo edit notebooks/03_mlp_training_evaluation.py
 - **Notebook 02** crea los splits y entrena los baselines solo al presionar los botones.
 - **Notebook 03** no hace nada hasta presionar **Run bounded MLP search and final test**; la corrida completa tarda unos 15 minutos en CPU.
 
-> Re-ejecutar el Notebook 03 vuelve a evaluar el test reservado. Hacelo solo para verificación deliberada: el test no debe usarse para iterar.
+> Re-ejecutar el Notebook 03 vuelve a evaluar el test reservado. Hacerlo solo para verificación deliberada: el test no debe usarse para iterar.
 
 ---
 
