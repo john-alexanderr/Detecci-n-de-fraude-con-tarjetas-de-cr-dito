@@ -16,7 +16,7 @@
 
 ---
 
-## Qué se hizo
+## Qué se hizo con los datos
 
 | Etapa | Descripción | Evidencia |
 | :--- | :--- | :--- |
