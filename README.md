@@ -56,12 +56,13 @@ The dataset therefore supports a historical benchmark, not claims that a model i
 
 ## Learning workflow
 
-The project uses two Marimo applications, kept as ordinary Python files for review and version control:
+The project uses three Marimo applications, kept as ordinary Python files for review and version control:
 
 1. [01 — Dataset understanding and EDA](notebooks/01_dataset_understanding_eda.py) audits the pinned dataset and explores target prevalence, amount and PCA distributions, class associations, correlation, relative elapsed time, and outliers.
 2. [02 — Data preparation and baselines](notebooks/02_data_preparation_baselines.py) creates grouped outer and inner holdouts, explains train-only preprocessing, and offers a button-triggered baseline comparison.
+3. [03 — MLP grouped cross-validation and final evaluation](notebooks/03_mlp_training_evaluation.py) gates a two-candidate, three-fold grouped search and one final evaluation on the reserved outer test behind an explicit run button.
 
-The detailed [EDA report](reports/eda_summary.md) preserves the collected diagnostic findings. The [baseline validation report](reports/baseline_validation.md) preserves the exact prior metrics and confusion matrices; opening the Marimo app does not retrain models.
+The detailed [EDA report](reports/eda_summary.md) preserves the collected diagnostic findings. The [baseline validation report](reports/baseline_validation.md) preserves the exact tree-model validation metrics and confusion matrices. The MLP grouped cross-validation, training/refit on development data, and one final evaluation of the reserved outer test are complete; the exact candidate scores, selected parameters, test metrics, and confusion matrix are in the [MLP evaluation report](reports/mlp_final_evaluation.md). The test was evaluated once after selection, with no threshold tuning.
 
 KaggleHub retrieves dataset handle `mlg-ulb/creditcardfraud/versions/3` only when `data/raw/creditcard.csv` is absent, and copies only that CSV into `data/raw/`. The raw data directory is ignored by Git; the CSV must not be committed. Check Kaggle's usage terms before redistributing the data. KaggleHub may require account setup depending on your environment; do not store credentials in this repository.
 
@@ -78,23 +79,24 @@ python3 -m pip install --upgrade pip
 python3 -m pip install -e '.[dev]'
 ```
 
-Run the lightweight tests and open either app in the Marimo editor:
+Run the lightweight tests and open an app in the Marimo editor:
 
 ```bash
 python3 -m pytest
 marimo edit notebooks/01_dataset_understanding_eda.py
 marimo edit notebooks/02_data_preparation_baselines.py
+marimo edit notebooks/03_mlp_training_evaluation.py
 ```
 
-Notebook 01 downloads the pinned CSV if needed and performs descriptive analysis. Notebook 02 loads the local data on open, then gates grouped split preparation behind **Create grouped partitions** and model fitting/SMOTE behind **Train baselines and score validation**. The training action fits Decision Tree, Random Forest, and AdaBoost on the training subset only; validation stays at natural prevalence. The outer test set is not scored. Use `make eda`, `make baselines`, and `make test` as shortcuts.
+Notebook 01 downloads the pinned CSV if needed and performs descriptive analysis. Notebook 02 loads the local data on open, then gates grouped split preparation and baseline fitting behind buttons; its three baselines train only on the inner training partition. Notebook 03 does not load data or run a search until **Run bounded MLP search and final test** is clicked. It uses the combined development partitions for grouped CV, refits the selected pipeline on development, then evaluates the reserved outer test once. Use `make eda`, `make baselines`, and `make test` as shortcuts.
 
 ## Project map
 
 ```text
 docs/                 Business framing, data, architecture, methodology, model card
 data/raw/             Local Kaggle CSV (ignored); .gitkeep tracks the empty directory
-notebooks/            Two Marimo Python applications
-reports/              Preserved EDA and baseline validation evidence
+notebooks/            Three Marimo Python applications
+reports/              EDA, baseline validation, and completed MLP evaluation evidence
 src/fraud_detection/  Data validation, grouped splits, pipelines, plots, metrics
 tests/                Lightweight synthetic-data tests; no downloads or model fitting
 ```
@@ -103,7 +105,7 @@ tests/                Lightweight synthetic-data tests; no downloads or model fi
 
 Preserve the downloaded source file and document its provenance. Audit the expected columns and types, missingness, exact duplicates, label values, feature ranges, and relative ordering. Do not silently delete, cap, or rewrite anomalous rows during this descriptive audit. `Time` is elapsed seconds rather than calendar time, and `V1`–`V28` are anonymized PCA inputs without direct business meaning.
 
-The current evaluation holds identical input-feature groups together in both the outer and inner split. `StandardScaler -> SMOTE -> classifier` is fitted only on the model-training subset; validation and test retain natural prevalence. Outer-test class counts are displayed only to verify stratification: test rows are not used to fit preprocessing, select features/models/thresholds, or score models. No cross-validation, threshold tuning, MLP training, or outer-test result exists. The two-day 2013 dataset cannot establish current or production performance.
+The current evaluation holds identical input-feature groups together in the outer and inner split. Baseline preprocessing is fitted only on the inner training subset; validation and test retain natural prevalence. The MLP search and development-data refit are complete: only inner training and validation data were combined for three-fold `StratifiedGroupKFold` search with group IDs, with scaling and SMOTE inside each fold's training pipeline. The selected pipeline was refit on development data before the reserved test was evaluated once. The test contains 56,962 rows and 99 frauds; it was not used for search or threshold tuning. Tree-baseline results are validation-only and are not directly comparable with MLP outer-test results because the partitions differ. The 99-fraud holdout estimate is uncertain and cannot establish current or production performance for this two-day 2013 dataset. Do not use the outer test again for iteration.
 
 ## Documentation
 
