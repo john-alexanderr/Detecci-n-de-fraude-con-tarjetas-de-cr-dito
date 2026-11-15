@@ -12,6 +12,10 @@
   <a href="https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud"><img src="https://img.shields.io/badge/Dataset-Kaggle-20BEFF?logo=kaggle&logoColor=white" alt="Kaggle Dataset"></a>
 </p>
 
+<p align="center">
+  <a href="https://john-alexanderr.github.io/Detecci-n-de-fraude-con-tarjetas-de-cr-dito/"><strong>Artículo publicado →</strong> El juego del gato y el ratón: los grandes desafíos detrás de un sistema de detección de fraude</a>
+</p>
+
 </div>
 
 ---
