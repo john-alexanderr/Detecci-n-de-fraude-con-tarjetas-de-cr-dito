@@ -117,6 +117,103 @@ def plot_fraud_amount_by_transaction(frame: pd.DataFrame):
     return fig
 
 
+def plot_confusion_matrix_concept():
+    """Dibuja una matriz de confusión genérica con las cuatro combinaciones."""
+    fig, axis = plt.subplots(figsize=(7, 5.5))
+    cells = [
+        ["TN", "FP"],
+        ["FN", "TP"],
+    ]
+    descriptions = [
+        ["Legítima correcta", "Falsa alarma"],
+        ["Fraude no detectado", "Fraude detectado"],
+    ]
+    colors = [
+        ["#9bc57a", "#bcd9e8"],
+        ["#bcd9e8", "#9bc57a"],
+    ]
+    for row in range(2):
+        for column in range(2):
+            axis.add_patch(
+                plt.Rectangle(
+                    (column, 1 - row),
+                    1,
+                    1,
+                    facecolor=colors[row][column],
+                    edgecolor="white",
+                    linewidth=3,
+                )
+            )
+            axis.text(
+                column + 0.5,
+                1 - row + 0.62,
+                cells[row][column],
+                ha="center",
+                va="center",
+                fontsize=24,
+                fontweight="bold",
+                color="#1f2d3d",
+            )
+            axis.text(
+                column + 0.5,
+                1 - row + 0.32,
+                descriptions[row][column],
+                ha="center",
+                va="center",
+                fontsize=10,
+                color="#1f2d3d",
+            )
+    axis.set_xlim(0, 2)
+    axis.set_ylim(0, 2)
+    axis.set_xticks([0.5, 1.5], ["Predicho: legítima (0)", "Predicho: fraude (1)"])
+    axis.set_yticks([1.5, 0.5], ["Real: legítima (0)", "Real: fraude (1)"])
+    axis.tick_params(length=0)
+    axis.set_xlabel("Clase predicha", fontsize=12, fontweight="bold")
+    axis.set_ylabel("Clase real", fontsize=12, fontweight="bold")
+    axis.set_title("Matriz de confusión: cómo se lee", fontsize=14)
+    for spine in axis.spines.values():
+        spine.set_visible(False)
+    fig.tight_layout()
+    return fig
+
+
+def plot_confusion_matrices(confusion_matrices: dict[str, list[list[int]]]):
+    """Dibuja una matriz de confusión por modelo con las siglas y los recuentos."""
+    labels = np.array([["TN", "FP"], ["FN", "TP"]])
+    fig, axes = plt.subplots(
+        1, len(confusion_matrices), figsize=(6 * len(confusion_matrices), 5)
+    )
+    axes = np.atleast_1d(axes)
+    for axis, (model_name, matrix) in zip(
+        axes, confusion_matrices.items(), strict=True
+    ):
+        counts = np.asarray(matrix)
+        annotations = np.empty(counts.shape, dtype=object)
+        for row in range(counts.shape[0]):
+            for column in range(counts.shape[1]):
+                value = f"{counts[row, column]:,}".replace(",", ".")
+                annotations[row, column] = f"{labels[row, column]}\n{value}"
+        sns.heatmap(
+            counts,
+            annot=annotations,
+            fmt="",
+            cmap="Blues",
+            cbar=False,
+            square=True,
+            linewidths=2,
+            linecolor="white",
+            ax=axis,
+            annot_kws={"fontsize": 13, "fontweight": "bold"},
+        )
+        axis.set_xticklabels(["Predicho: legítima", "Predicho: fraude"], rotation=0)
+        axis.set_yticklabels(["Real: legítima", "Real: fraude"], rotation=0)
+        axis.set_title(model_name)
+        axis.set_xlabel("Clase predicha", fontsize=11)
+        axis.set_ylabel("Clase real", fontsize=11)
+    fig.tight_layout()
+    return fig
+
+
 def plot_pca_marginals(frame: pd.DataFrame):
     components = [f"V{index}" for index in range(1, 29)]
     figure, axes = plt.subplots(4, 7, figsize=(18, 12))

@@ -12,6 +12,10 @@ def _():
     from fraud_detection.data import FEATURE_COLUMNS, load_dataset
     from fraud_detection.evaluation import run_baseline_validation
     from fraud_detection.models import build_baseline_pipelines
+    from fraud_detection.plots import (
+        plot_confusion_matrix_concept,
+        plot_confusion_matrices,
+    )
     from fraud_detection.splitting import (
         create_grouped_partitions,
         grouped_overlap_count,
@@ -29,6 +33,8 @@ def _():
         load_dataset,
         mo,
         pd,
+        plot_confusion_matrices,
+        plot_confusion_matrix_concept,
         run_baseline_validation,
     )
 
@@ -268,9 +274,43 @@ def _(SMOTE, StandardScaler, partitions, pd):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## Paso 4 — Entrenar los dos modelos y evaluar en validación
+    ## Paso 4 — Entender cómo se evalúa: la matriz de confusión
 
-    El botón ajusta cada pipeline con las 182.276 filas de entrenamiento (SMOTE incluido dentro del pipeline) y predice la validación. La validación tiene prevalencia natural —79 fraudes en 45.569 filas—, así que las métricas reflejan el desbalance real, no uno inflado por el remuestreo.
+    Antes de entrenar conviene tener claro qué significa "predecir bien". La matriz de confusión compara lo que el modelo predijo con la etiqueta real. Convención de esta tabla: **filas = clase real**, **columnas = clase predicha**.
+
+    Cada celda tiene un nombre:
+
+    - **TP (verdadero positivo)**: era fraude y el modelo dijo fraude. Acierto.
+    - **TN (verdadero negativo)**: era legítima y el modelo dijo legítima. Acierto.
+    - **FP (falso positivo)**: era legítima y el modelo dijo fraude. Falsa alarma (error tipo I).
+    - **FN (falso negativo)**: era fraude y el modelo dijo legítima. Fraude no detectado (error tipo II).
+
+    De ahí salen las métricas:
+
+    | Métrica | Fórmula | Qué responde |
+    | --- | --- | --- |
+    | Exactitud (_accuracy_) | `(TP + TN) / total` | ¿Qué fracción de todas las respuestas fue correcta? |
+    | Precisión | `TP / (TP + FP)` | De las alertas de fraude, ¿cuántas eran fraude real? |
+    | Recall (exhaustividad) | `TP / (TP + FN)` | De todos los fraudes, ¿cuántos se detectaron? |
+    | F1 | `2 · (precisión · recall) / (precisión + recall)` | Equilibrio entre precisión y recall |
+
+    En este problema la exactitud sola engaña: con 0,17 % de fraudes, un modelo que responda siempre "legítima" acierta el 99,8 % y no detecta nada. Por eso la métrica principal es el **área bajo la curva precisión-recall (AUPRC)**, que aquí llamamos `Average Precision`: resume qué tan bien el modelo ordena los fraudes por encima de las legítimas, sin depender de un umbral fijo. El informe usa además **F2** en lugar de F1: F2 da el doble de peso al recall, porque un fraude no detectado suele costar más que una falsa alarma.
+    """)
+    return
+
+
+@app.cell
+def _(plot_confusion_matrix_concept):
+    plot_confusion_matrix_concept()
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    ## Paso 5 — Entrenar y comparar los dos modelos base
+
+    El botón ajusta cada pipeline con las 182.276 filas de entrenamiento (SMOTE incluido dentro del pipeline) y predice la validación. La validación tiene prevalencia natural —79 fraudes en 45.569 filas—, así que las métricas reflejan el desbalance real, no uno inflado por el remuestreo. Al terminar se muestran la tabla de métricas y las dos matrices de confusión con los recuentos reales.
     """)
     return
 
@@ -285,7 +325,7 @@ def _(mo):
 
 
 @app.cell
-def _(baseline_run_button, mo, partitions, pd, run_baseline_validation):
+def _(baseline_run_button, mo, partitions, run_baseline_validation):
     mo.stop(
         not baseline_run_button.value,
         mo.md(
@@ -299,32 +339,27 @@ def _(baseline_run_button, mo, partitions, pd, run_baseline_validation):
         partitions.x_validation,
         partitions.y_validation,
     )
-    for model_name, matrix in confusion_matrices.items():
-        print(
-            f"Matriz de confusión de {model_name} "
-            "(filas = real, columnas = predicho; etiquetas 0, 1):"
-        )
-        print(pd.DataFrame(matrix, index=[0, 1], columns=[0, 1]))
     baseline_results
     return baseline_results, confusion_matrices
 
 
 @app.cell
+def _(confusion_matrices, plot_confusion_matrices):
+    plot_confusion_matrices(confusion_matrices)
+    return
+
+
+@app.cell
 def _(mo):
     mo.md(r"""
-    ## Paso 5 — Leer los resultados
+    ## Paso 6 — Leer los resultados
 
-    **¿Por qué Average Precision y no exactitud?** Con 0,17 % de fraudes, la exactitud engaña: un modelo que responda siempre "legítima" acierta el 99,8 % y no detecta nada. El área bajo la curva precisión-recall (AUPRC) —nuestro `Average Precision`— resume qué tan bien se ordenan los fraudes por encima de las legítimas, sin depender de un umbral fijo.
+    Leer las dos matrices con la misma lupa:
 
-    Cómo leer las métricas que aparecen arriba:
+    - **Random Forest**: 64 fraudes detectados (TP) y 15 no detectados (FN), con solo 9 falsas alarmas (FP). Es el mejor equilibrio provisional: mayor Average Precision y precisión.
+    - **AdaBoost**: detecta 72 fraudes (TP) y deja escapar 7 (FN), pero dispara 1.423 falsas alarmas (FP). Su recall es más alto; su precisión, muy baja.
 
-    - **Average Precision (AP)**: resume la curva precisión-recall; más cerca de 1 significa mejor ranking de fraudes.
-    - **Precisión**: de todas las alertas que marcó el modelo, qué fracción era fraude real.
-    - **Recall (exhaustividad)**: de todos los fraudes reales, qué fracción fue detectada.
-    - **F2**: combina precisión y recall dando el doble de peso al recall.
-    - **Matriz de confusión**: TN y TP son aciertos, FP son falsas alarmas y FN son fraudes que se escaparon.
-
-    La comparación tiene una sola división de validación con 79 fraudes. Random Forest logra el mejor equilibrio provisional en esa división; AdaBoost tiene el recall más alto, pero una carga severa de falsas alertas. Para estos modelos base no existe validación cruzada, ajuste de umbral ni ajuste de hiperparámetros; la prueba reservada se evaluó solo con el MLP. Consultar [el informe exacto de validación](../reports/baseline_validation.md).
+    La comparación tiene una sola división de validación con 79 fraudes. Para estos modelos base no existe validación cruzada, ajuste de umbral ni ajuste de hiperparámetros; la prueba reservada se evaluó solo con el MLP. Consultar [el informe exacto de validación](../reports/baseline_validation.md).
     """)
     return
 
