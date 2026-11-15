@@ -418,6 +418,85 @@ def plot_random_forest_concept():
     return fig
 
 
+def plot_per_class_metrics(confusion_matrices: dict[str, list[list[int]]]):
+    """Dibuja precisión y recall por clase a partir de cada matriz de confusión."""
+    rows = []
+    for model_name, matrix in confusion_matrices.items():
+        true_negative, false_positive, false_negative, true_positive = np.asarray(
+            matrix
+        ).ravel()
+        rows.extend(
+            [
+                {
+                    "model": model_name,
+                    "metric": "Precisión · clase 0 (legítima)",
+                    "value": true_negative / (true_negative + false_negative),
+                },
+                {
+                    "model": model_name,
+                    "metric": "Recall · clase 0 (legítima)",
+                    "value": true_negative / (true_negative + false_positive),
+                },
+                {
+                    "model": model_name,
+                    "metric": "Precisión · clase 1 (fraude)",
+                    "value": true_positive / (true_positive + false_positive),
+                },
+                {
+                    "model": model_name,
+                    "metric": "Recall · clase 1 (fraude)",
+                    "value": true_positive / (true_positive + false_negative),
+                },
+            ]
+        )
+
+    order = [
+        "Precisión · clase 0 (legítima)",
+        "Recall · clase 0 (legítima)",
+        "Precisión · clase 1 (fraude)",
+        "Recall · clase 1 (fraude)",
+    ]
+    frame = pd.DataFrame(rows)
+    fig, axis = plt.subplots(figsize=(9, 5.2))
+    sns.barplot(
+        data=frame,
+        y="metric",
+        x="value",
+        hue="model",
+        order=order,
+        palette={"Random Forest": "#5b5bd6", "AdaBoost": "#e4572e"},
+        ax=axis,
+    )
+    for container in axis.containers:
+        axis.bar_label(
+            container,
+            labels=[
+                f"{100 * value:.2f} %".replace(".", ",")
+                for value in container.datavalues
+            ],
+            padding=6,
+            fontsize=9,
+        )
+    axis.set_xlim(0, 1.18)
+    axis.set_xticks(
+        [0, 0.25, 0.5, 0.75, 1.0],
+        ["0,0", "0,25", "0,50", "0,75", "1,0"],
+    )
+    axis.set_xlabel("Valor (1,0 = perfecto)")
+    axis.set_ylabel("")
+    axis.set_title("Precisión y recall por clase en validación")
+    axis.legend(
+        title="",
+        loc="upper center",
+        bbox_to_anchor=(0.5, -0.16),
+        ncol=2,
+        frameon=False,
+    )
+    sns.despine(ax=axis)
+    fig.tight_layout()
+    return fig
+
+
 def plot_pca_marginals(frame: pd.DataFrame):
     components = [f"V{index}" for index in range(1, 29)]
     figure, axes = plt.subplots(4, 7, figsize=(18, 12))

@@ -15,6 +15,7 @@ def _():
     from fraud_detection.plots import (
         plot_confusion_matrix_concept,
         plot_confusion_matrices,
+        plot_per_class_metrics,
         plot_random_forest_concept,
     )
     from fraud_detection.splitting import (
@@ -36,6 +37,7 @@ def _():
         pd,
         plot_confusion_matrices,
         plot_confusion_matrix_concept,
+        plot_per_class_metrics,
         plot_random_forest_concept,
         run_baseline_validation,
     )
@@ -439,6 +441,12 @@ def _(confusion_matrices, plot_confusion_matrices):
 
 
 @app.cell
+def _(confusion_matrices, plot_per_class_metrics):
+    plot_per_class_metrics(confusion_matrices)
+    return
+
+
+@app.cell
 def _(mo):
     mo.md(r"""
     ## Paso 7 — Leer los resultados
@@ -456,6 +464,15 @@ def _(mo):
 
     - **Random Forest**: 64 fraudes detectados (TP) y 15 no detectados (FN), con solo 9 falsas alarmas (FP). De cada 100 alertas que dispara, 88 son fraude real, y encuentra 81 de cada 100 fraudes. Es el mejor equilibrio provisional: mayor Average Precision y precisión.
     - **AdaBoost**: detecta 72 fraudes (TP) y deja escapar 7 (FN), pero dispara 1.423 falsas alarmas (FP). Encuentra 91 de cada 100 fraudes, pero de cada 100 alertas solo 5 son fraude real: su recall es más alto; su precisión, muy baja.
+
+    ### Precisión y recall por clase
+
+    La tabla anterior resume el modelo completo; esta mirada separa las dos clases. Es la que conviene tener a mano para explicar el comportamiento:
+
+    - **Clase 0 (legítima)**: precisión y recall rondan el 100 %. No es un gran mérito: como el 99,8 % de las filas es legítima, acertar en esa clase es fácil y cualquier valor se ve casi perfecto.
+    - **Clase 1 (fraude)**: aquí aparece la diferencia real. Random Forest acierta el 87,7 % de sus alertas y detecta el 81,0 % de los fraudes; AdaBoost detecta el 91,1 % pero solo el 4,8 % de sus alertas son fraude real.
+
+    **Cuidado con los nombres al leer una matriz.** `TN` es la legítima bien clasificada y `TP` el fraude detectado: la celda grande (decenas de miles) es `TN`, no `TP`. Un texto que etiquete ese número como "verdadero positivo" está invirtiendo los términos, y con eso se invierten también FP y FN. En nuestra validación: `TN = 45.481`, `FP = 9`, `FN = 15`, `TP = 64`.
 
     La comparación tiene una sola división de validación con 79 fraudes. Para estos modelos base no existe validación cruzada, ajuste de umbral ni ajuste de hiperparámetros; la prueba reservada se evaluó solo con el MLP. Consultar [el informe exacto de validación](../reports/baseline_validation.md).
     """)
