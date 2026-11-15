@@ -138,7 +138,7 @@ def _(mo):
 
     El orden del pipeline base es **`StandardScaler -> SMOTE(random_state=42) -> classifier`**. Tanto el escalado como el remuestreo se ajustan solo con la partición de entrenamiento del modelo; la validación y la prueba externa reservada mantienen la prevalencia natural. SMOTE se basa en distancias, por lo que se estandarizan las 30 variables de entrada numéricas. Los árboles no necesitan escalado por sí mismos, pero usan el mismo pipeline para mantener coherente el límite de preprocesamiento de esta comparación.
 
-    La configuración de los clasificadores coincide con el benchmark preservado: Decision Tree (`random_state=42`), Random Forest (`n_estimators=200`, `random_state=42`, `n_jobs=-1`) y AdaBoost (`random_state=42`).
+    La configuración de los dos clasificadores coincide con el benchmark preservado: Random Forest (`n_estimators=200`, `random_state=42`, `n_jobs=-1`) y AdaBoost (`random_state=42`).
     """)
     return
 
@@ -157,7 +157,7 @@ def _(baseline_run_button, mo, partitions, pd, run_baseline_validation):
     mo.stop(
         not baseline_run_button.value,
         mo.md(
-            "Hacer clic en el botón de arriba para ajustar los tres modelos base "
+            "Hacer clic en el botón de arriba para ajustar los dos modelos base "
             "y evaluar la validación."
         ),
     )

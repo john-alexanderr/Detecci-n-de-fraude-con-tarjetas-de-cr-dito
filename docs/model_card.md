@@ -2,7 +2,7 @@
 
 ## Resumen
 
-Esta model card describe una comparación académica histórica de Decision Tree, Random Forest y AdaBoost, además de la validación cruzada completa del MLP, el entrenamiento y reajuste con datos de desarrollo y una evaluación final en la prueba externa. Los resultados de los árboles son evidencia solo de validación y ningún modelo está aprobado para tomar decisiones de pago.
+Esta model card describe una comparación académica histórica de Random Forest y AdaBoost, además de la validación cruzada completa del MLP, el entrenamiento y reajuste con datos de desarrollo y una evaluación final en la prueba externa. Los resultados de los árboles son evidencia solo de validación y ningún modelo está aprobado para tomar decisiones de pago.
 
 ## Uso previsto
 

@@ -4,13 +4,11 @@ from imblearn.over_sampling import SMOTE
 from imblearn.pipeline import Pipeline
 from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
-from sklearn.tree import DecisionTreeClassifier
 
 
 def build_baseline_pipelines() -> dict[str, Pipeline]:
     """Crea los estimadores base de referencia en orden escalador, SMOTE y clasificador."""
     classifiers = {
-        "Decision Tree": DecisionTreeClassifier(random_state=42),
         "Random Forest": RandomForestClassifier(
             n_estimators=200,
             random_state=42,

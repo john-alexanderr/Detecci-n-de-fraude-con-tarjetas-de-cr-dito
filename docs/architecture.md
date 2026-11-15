@@ -2,7 +2,7 @@
 
 ## Resumen
 
-El repositorio es un pequeño benchmark académico, organizado en torno a dos aplicaciones Marimo y módulos de análisis reutilizables. Intencionalmente no contiene capas vacías de servicio, API, despliegue, monitoreo o streaming.
+El repositorio es un pequeño benchmark académico, organizado en torno a tres aplicaciones Marimo y módulos de análisis reutilizables. Intencionalmente no contiene capas vacías de servicio, API, despliegue, monitoreo o streaming.
 
 ```text
 docs/                 Marco del proyecto y metodología
@@ -19,7 +19,7 @@ tests/                Pruebas unitarias con datos sintéticos
 | --- | --- |
 | `fraud_detection.data` | Resuelve la ruta local del dataset dentro del repositorio, recupera la fuente fijada solo cuando no existe y valida su esquema. |
 | `fraud_detection.splitting` | Calcula hashes de las firmas de variables de entrada y crea holdouts estratificados agrupados externos e internos. |
-| `fraud_detection.models` | Construye los tres pipelines de baseline en un orden de preprocesamiento seguro frente a fugas de información. |
+| `fraud_detection.models` | Construye los dos pipelines de baseline en un orden de preprocesamiento seguro frente a fugas de información. |
 | `fraud_detection.plots` | Proporciona visualizaciones descriptivas reutilizables para la aplicación de EDA. |
 | `fraud_detection.evaluation` | Ajusta y evalúa los baselines solo con datos de entrenamiento y validación. |
 | `notebooks/01_dataset_understanding_eda.py` | Carga y describe la fuente, y luego muestra las vistas de EDA documentadas. |

@@ -29,7 +29,6 @@
 
 | Modelo | Average Precision | Precisión | Recall | F2 |
 | :--- | ---: | ---: | ---: | ---: |
-| Árbol de Decisión | 0.2733 | 0.3593 | 0.7595 | 0.6211 |
 | **Random Forest** | **0.8499** | **0.8767** | 0.8101 | 0.8226 |
 | AdaBoost | 0.7367 | 0.0482 | **0.9114** | 0.1988 |
 

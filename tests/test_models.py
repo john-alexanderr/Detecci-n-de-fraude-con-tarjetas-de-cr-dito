@@ -8,7 +8,7 @@ from fraud_detection.models import build_baseline_pipelines
 def test_baseline_pipelines_keep_scaling_and_smote_inside_training_pipeline():
     pipelines = build_baseline_pipelines()
 
-    assert list(pipelines) == ["Decision Tree", "Random Forest", "AdaBoost"]
+    assert list(pipelines) == ["Random Forest", "AdaBoost"]
     for pipeline in pipelines.values():
         assert [name for name, _ in pipeline.steps] == [
             "scaler",

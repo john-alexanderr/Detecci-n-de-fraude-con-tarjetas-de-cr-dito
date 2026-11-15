@@ -19,11 +19,10 @@ A modo de comparación, la partición aleatoria estratificada convencional anter
 
 ## Preprocesamiento y baselines
 
-Cada pipeline de baseline aplica **`StandardScaler -> SMOTE(random_state=42) -> classifier`**. El escalador y el muestreador se ajustan solo con el subconjunto de entrenamiento; las muestras generadas nunca entran en validación. La validación se mantiene en la prevalencia natural. Los tres clasificadores y sus configuraciones son:
+Cada pipeline de baseline aplica **`StandardScaler -> SMOTE(random_state=42) -> classifier`**. El escalador y el muestreador se ajustan solo con el subconjunto de entrenamiento; las muestras generadas nunca entran en validación. La validación se mantiene en la prevalencia natural. Los dos clasificadores y sus configuraciones son:
 
 | Clasificador | Configuración |
 | --- | --- |
-| Decision Tree | `random_state=42` |
 | Random Forest | `n_estimators=200`, `random_state=42`, `n_jobs=-1` |
 | AdaBoost | `random_state=42` |
 
