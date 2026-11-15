@@ -257,7 +257,9 @@ def _(mo):
     mo.md(r"""
     ### Dispersión del importe según la transacción
 
-    Cada punto es una transacción: el eje horizontal muestra su importe real (sin `log1p`, para ver el rango completo) y el eje vertical su posición original en el archivo. El color indica la clase: 0 = legítima, 1 = fraude. La mayoría de las transacciones se concentra en importes bajos, mientras unos pocos valores altos quedan aislados a la derecha.
+    Cada punto es una transacción: el eje horizontal muestra su importe real (sin `log1p`, para ver el rango completo) y el eje vertical su posición original en el archivo. El color indica la clase: azul intenso = 0 (legítima) y amarillo = 1 (fraude).
+
+    La gran mayoría de los puntos son azules, así que la mancha amarilla de fraudes es pequeña y hay que mirarla de cerca. Además, no se ven fraudes por encima de 5.000 €: el importe máximo de una operación fraudulenta en todo el dataset es `2.125,87 €`, mientras que las legítimas llegan hasta `25.691,16 €`. Es una observación descriptiva, no una regla de decisión.
     """)
     return
 
