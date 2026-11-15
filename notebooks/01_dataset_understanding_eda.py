@@ -18,6 +18,7 @@ def _():
         plot_class_prevalence,
         plot_class_share,
         plot_correlation_heatmap,
+        plot_fraud_amount_by_transaction,
         plot_iqr_flag_rates,
         plot_outlier_class_comparison,
         plot_pca_marginals,
@@ -39,6 +40,7 @@ def _():
         plot_class_prevalence,
         plot_class_share,
         plot_correlation_heatmap,
+        plot_fraud_amount_by_transaction,
         plot_iqr_flag_rates,
         plot_outlier_class_comparison,
         plot_pca_marginals,
@@ -261,7 +263,7 @@ def _(mo):
     mo.md(r"""
     ### EDA parte 1 — Distribuciones univariadas
 
-    Los gráficos usan solo la partición de desarrollo agrupada, salvo la proporción de clases, que describe el dataset completo. Las diferencias de distribución por sí solas no demuestran valor predictivo.
+    Los gráficos usan solo la partición de desarrollo agrupada, salvo la proporción de clases y la dispersión solo de fraudes, que describen el dataset completo. Las diferencias de distribución por sí solas no demuestran valor predictivo.
     """)
     return
 
@@ -325,6 +327,30 @@ def _(df, mo):
 @app.cell
 def _(df, plot_class_share):
     plot_class_share(df)
+    return
+
+
+@app.cell
+def _(df, mo):
+    _fraud_only = df.loc[df["Class"] == 1, "Amount"]
+    _fraud_only_count = f"{len(_fraud_only):,}".replace(",", ".")
+    _fraud_only_median = (
+        f"{_fraud_only.median():,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    )
+    _fraud_only_max = (
+        f"{_fraud_only.max():,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    )
+    mo.md(f"""
+    ### Dispersión solo de las transacciones fraudulentas
+
+    Al aislar únicamente las transacciones con `Class == 1`, la dispersión gana perspectiva: ahora se ven las **{_fraud_only_count}** operaciones fraudulentas del dataset. La mayoría se concentra en importes bajos (mediana de **{_fraud_only_median} €**) y solo unas pocas alcanzan importes altos, hasta un máximo de **{_fraud_only_max} €**.
+    """)
+    return
+
+
+@app.cell
+def _(df, plot_fraud_amount_by_transaction):
+    plot_fraud_amount_by_transaction(df)
     return
 
 

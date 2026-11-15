@@ -96,6 +96,27 @@ def plot_amount_by_transaction(frame: pd.DataFrame):
     return fig
 
 
+def plot_fraud_amount_by_transaction(frame: pd.DataFrame):
+    fraud = frame.loc[frame["Class"] == 1]
+    fig, axis = plt.subplots(figsize=(11, 5))
+    axis.scatter(
+        fraud["Amount"],
+        fraud.index,
+        color="#5b5bd6",
+        s=14,
+        alpha=0.75,
+        linewidths=0,
+        rasterized=True,
+    )
+    axis.set(
+        title="Distribución del importe de las transacciones fraudulentas",
+        xlabel="Importe de la transacción (Amount)",
+        ylabel="Índice de transacción",
+    )
+    fig.tight_layout()
+    return fig
+
+
 def plot_pca_marginals(frame: pd.DataFrame):
     components = [f"V{index}" for index in range(1, 29)]
     figure, axes = plt.subplots(4, 7, figsize=(18, 12))
