@@ -1,3 +1,7 @@
+# /// script
+# [tool.marimo.display]
+# theme = "dark"
+# ///
 import marimo
 
 __generated_with = "0.23.16"
@@ -18,6 +22,7 @@ def _():
         plot_confusion_matrices,
         plot_per_class_metrics,
         plot_random_forest_concept,
+        set_plot_theme,
     )
     from fraud_detection.splitting import (
         create_grouped_partitions,
@@ -25,6 +30,10 @@ def _():
     )
     from imblearn.over_sampling import SMOTE
     from sklearn.preprocessing import StandardScaler
+
+    # Marimo cambia la interfaz; esta llamada cambia las figuras Matplotlib/Seaborn.
+    # Usa "light" si necesitas fondo claro.
+    set_plot_theme("dark")
 
     return (
         FEATURE_COLUMNS,
@@ -51,6 +60,8 @@ def _(mo):
     # 02 — Preparación de datos y modelos base
 
     Este notebook arma el modelo paso a paso: carga los datos, agrupa los duplicados exactos antes de dividir, construye el pipeline de preprocesamiento y entrena los dos modelos de referencia. Al abrir la aplicación se carga el CSV y se muestran las dimensiones de `X` e `y` junto con las primeras filas de `X`; los botones habilitan la división agrupada y el ajuste/evaluación de los modelos. Si falta `data/raw/creditcard.csv`, la carga intenta descargar la fuente fijada de Kaggle, por lo que abrir el notebook puede requerir conexión y descargar el archivo.
+
+    > **Apariencia:** el tema de Marimo cambia la interfaz; `set_plot_theme("dark")` cambia los gráficos Matplotlib/Seaborn. Usa `set_plot_theme("light")` si necesitas un fondo claro.
 
     ## Paso 1 — Definir qué mira el modelo (`X`) y qué debe predecir (`y`)
 

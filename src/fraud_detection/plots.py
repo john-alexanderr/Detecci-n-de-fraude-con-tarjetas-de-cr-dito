@@ -6,9 +6,70 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
-def set_plot_theme() -> None:
-    """Aplica el estilo visual compartido por los gráficos de EDA."""
-    sns.set_theme(style="whitegrid", context="notebook")
+def set_plot_theme(theme: str = "dark") -> None:
+    """Aplica un tema oscuro o claro a las figuras Matplotlib y Seaborn."""
+    themes = {
+        "dark": {
+            "style": "darkgrid",
+            "figure": "#0b1020",
+            "axes": "#111827",
+            "text": "#e5e7eb",
+            "edge": "#475569",
+            "grid": "#334155",
+            "palette": [
+                "#60a5fa",
+                "#fb923c",
+                "#34d399",
+                "#f472b6",
+                "#facc15",
+                "#a78bfa",
+            ],
+        },
+        "light": {
+            "style": "whitegrid",
+            "figure": "#f8fafc",
+            "axes": "#ffffff",
+            "text": "#172033",
+            "edge": "#64748b",
+            "grid": "#cbd5e1",
+            "palette": [
+                "#2563eb",
+                "#c2410c",
+                "#047857",
+                "#be185d",
+                "#a16207",
+                "#6d28d9",
+            ],
+        },
+    }
+    if theme not in themes:
+        raise ValueError("theme must be either 'dark' or 'light'")
+
+    colors = themes[theme]
+    sns.set_theme(
+        style=colors["style"],
+        context="notebook",
+        palette=colors["palette"],
+        rc={
+            "figure.facecolor": colors["figure"],
+            "axes.facecolor": colors["axes"],
+            "axes.edgecolor": colors["edge"],
+            "axes.labelcolor": colors["text"],
+            "axes.titlecolor": colors["text"],
+            "axes.grid": True,
+            "grid.color": colors["grid"],
+            "grid.alpha": 0.45,
+            "grid.linestyle": ":",
+            "text.color": colors["text"],
+            "xtick.color": colors["text"],
+            "ytick.color": colors["text"],
+            "legend.facecolor": colors["axes"],
+            "legend.edgecolor": colors["edge"],
+            "legend.labelcolor": colors["text"],
+            "savefig.facecolor": colors["figure"],
+            "savefig.edgecolor": colors["figure"],
+        },
+    )
 
 
 def plot_class_prevalence(frame: pd.DataFrame):
@@ -29,12 +90,13 @@ def plot_class_share(frame: pd.DataFrame):
     fig, axis = plt.subplots(figsize=(7, 5))
     axis.pie(
         counts,
-        colors=["#5b5bd6", "#e4572e"],
+        colors=sns.color_palette()[:2],
         autopct=lambda pct: (
             f"{pct:.1f}%".replace(".", ",")
             if pct >= 1
             else f"{pct:.3f}%".replace(".", ",")
         ),
+        textprops={"color": plt.rcParams["text.color"], "fontweight": "bold"},
         startangle=90,
         counterclock=False,
         pctdistance=1.06,
@@ -102,7 +164,7 @@ def plot_fraud_amount_by_transaction(frame: pd.DataFrame):
     axis.scatter(
         fraud["Amount"],
         fraud.index,
-        color="#5b5bd6",
+        color=sns.color_palette()[0],
         s=14,
         alpha=0.75,
         linewidths=0,
@@ -171,6 +233,9 @@ def plot_confusion_matrix_concept():
     axis.set_xlabel("Clase predicha", fontsize=12, fontweight="bold")
     axis.set_ylabel("Clase real", fontsize=12, fontweight="bold")
     axis.set_title("Matriz de confusión: cómo se lee", fontsize=14)
+    axis.title.set_color(plt.rcParams["text.color"])
+    axis.xaxis.label.set_color(plt.rcParams["axes.labelcolor"])
+    axis.yaxis.label.set_color(plt.rcParams["axes.labelcolor"])
     for spine in axis.spines.values():
         spine.set_visible(False)
     fig.tight_layout()
@@ -464,7 +529,10 @@ def plot_per_class_metrics(confusion_matrices: dict[str, list[list[int]]]):
         x="value",
         hue="model",
         order=order,
-        palette={"Random Forest": "#5b5bd6", "AdaBoost": "#e4572e"},
+        palette={
+            "Random Forest": sns.color_palette()[0],
+            "AdaBoost": sns.color_palette()[1],
+        },
         ax=axis,
     )
     for container in axis.containers:
@@ -476,6 +544,7 @@ def plot_per_class_metrics(confusion_matrices: dict[str, list[list[int]]]):
             ],
             padding=6,
             fontsize=9,
+            color=plt.rcParams["text.color"],
         )
     axis.set_xlim(0, 1.18)
     axis.set_xticks(
@@ -637,7 +706,7 @@ def plot_adaboost_concept():
         va="center",
         fontsize=8.5,
         style="italic",
-        color="#64748b",
+        color=plt.rcParams["axes.labelcolor"],
     )
 
     box(9.3, 3.55, 2.25, 1.9, "#fff7ed", "#fdba74")
@@ -748,8 +817,8 @@ def plot_selected_pca_by_class(frame: pd.DataFrame):
 def plot_target_associations(frame: pd.DataFrame):
     associations = frame.corr(numeric_only=True)["Class"].drop("Class").sort_values()
     fig, axis = plt.subplots(figsize=(9, 10))
-    associations.plot.barh(ax=axis, color="steelblue")
-    axis.axvline(0, color="black", linewidth=0.8)
+    associations.plot.barh(ax=axis, color=sns.color_palette()[0])
+    axis.axvline(0, color=plt.rcParams["axes.edgecolor"], linewidth=0.8)
     axis.set(
         title="Asociación de Pearson de las entradas numéricas con Class",
         xlabel="Correlación de Pearson (asociación, no causalidad)",
@@ -815,7 +884,7 @@ def plot_iqr_flag_rates(frame: pd.DataFrame):
     rates = outside_fences.mean().mul(100).sort_values()
 
     fig, axis = plt.subplots(figsize=(9, 10))
-    rates.plot.barh(ax=axis, color="darkorange")
+    rates.plot.barh(ax=axis, color=sns.color_palette()[1])
     axis.set(
         title="Filas fuera de los límites de 1.5 × IQR por variable numérica",
         xlabel="Filas marcadas (%)",

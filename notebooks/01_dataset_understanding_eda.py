@@ -1,3 +1,7 @@
+# /// script
+# [tool.marimo.display]
+# theme = "dark"
+# ///
 import marimo
 
 __generated_with = "0.23.16"
@@ -28,7 +32,9 @@ def _():
         set_plot_theme,
     )
 
-    set_plot_theme()
+    # Marimo cambia la interfaz; esta llamada cambia las figuras Matplotlib/Seaborn.
+    # Usa "light" si necesitas fondo claro.
+    set_plot_theme("dark")
     return (
         load_dataset,
         mo,
@@ -57,6 +63,8 @@ def _(mo):
     # 01 — Comprensión del dataset y análisis exploratorio
 
     Construye una visión basada en evidencia del dataset público [Credit Card Fraud Detection de Kaggle (versión 3)](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud/versions/3) antes del modelado. Esta aplicación descarga la fuente fijada solo cuando el CSV local no existe y nunca edita ni elimina observaciones.
+
+    > **Apariencia:** el tema de Marimo cambia la interfaz; `set_plot_theme("dark")` cambia los gráficos Matplotlib/Seaborn. Usa `set_plot_theme("light")` si necesitas un fondo claro.
 
     ## Encuadre de negocio y límite de la evaluación
 
