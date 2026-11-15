@@ -16,6 +16,7 @@ def _():
         plot_amount_by_transaction,
         plot_amount_distribution,
         plot_class_prevalence,
+        plot_class_share,
         plot_correlation_heatmap,
         plot_iqr_flag_rates,
         plot_outlier_class_comparison,
@@ -36,6 +37,7 @@ def _():
         plot_amount_by_transaction,
         plot_amount_distribution,
         plot_class_prevalence,
+        plot_class_share,
         plot_correlation_heatmap,
         plot_iqr_flag_rates,
         plot_outlier_class_comparison,
@@ -239,6 +241,22 @@ def _(mo):
 @app.cell
 def _(development_df, plot_class_prevalence):
     plot_class_prevalence(development_df)
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    ### Proporción entre clases
+
+    El gráfico de torta muestra qué porcentaje del total representa cada clase. La porción de fraude es casi invisible: ronda el **0,17 %** de las transacciones, mientras que alrededor del **99,8 %** son legítimas. Por eso la exactitud (_accuracy_) sola no sirve como métrica: un modelo que clasifique todo como legítimo acertaría casi el 100 % y no detectaría ningún fraude.
+    """)
+    return
+
+
+@app.cell
+def _(development_df, plot_class_share):
+    plot_class_share(development_df)
     return
 
 

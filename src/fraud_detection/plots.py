@@ -24,6 +24,28 @@ def plot_class_prevalence(frame: pd.DataFrame):
     return fig
 
 
+def plot_class_share(frame: pd.DataFrame):
+    counts = frame["Class"].value_counts().reindex([0, 1], fill_value=0)
+    fig, axis = plt.subplots(figsize=(7, 5))
+    axis.pie(
+        counts,
+        colors=["#5b5bd6", "#e4572e"],
+        autopct=lambda pct: f"{pct:.1f}%" if pct >= 1 else f"{pct:.3f}%",
+        startangle=90,
+        counterclock=False,
+        pctdistance=1.06,
+    )
+    axis.legend(
+        ["Legítima (clase 0)", "Fraude (clase 1)"],
+        loc="center left",
+        bbox_to_anchor=(1.0, 0.5),
+        frameon=False,
+    )
+    axis.set_title("Proporción de transacciones legítimas y fraudulentas")
+    fig.tight_layout()
+    return fig
+
+
 def plot_amount_distribution(frame: pd.DataFrame):
     amount_plot = frame[["Amount", "Class"]].copy()
     amount_plot["log1p_amount"] = np.log1p(amount_plot["Amount"])
