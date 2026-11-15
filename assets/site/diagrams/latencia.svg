@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img">
+  <title>Presupuesto de latencia de 150 milisegundos en el pipeline antifraude</title>
+  <desc>Línea de tiempo horizontal que descompone un presupuesto de 150 milisegundos en siete pasos apilados con anchos proporcionales: recibir, validar, consultar historial, calcular features, ejecutar modelo, reglas de negocio y responder. A la derecha, dos barras verticales comparan los percentiles P95 (143 ms) y P99 (168 ms) frente a la línea punteada del presupuesto de 150 ms.</desc>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="40%" r="78%">
+      <stop offset="0%" stop-color="#131C3F"/>
+      <stop offset="100%" stop-color="#070B18"/>
+    </radialGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#16204A" stroke-opacity="0.35" stroke-width="1"/>
+    </pattern>
+    <style>
+      .t{font-family:Inter,'Segoe UI',system-ui,sans-serif}
+      .tt{font-family:Inter,'Segoe UI',system-ui,sans-serif;font-weight:700;fill:#E6EDF7}
+      .ts{font-family:Inter,'Segoe UI',system-ui,sans-serif;fill:#8A99C2}
+      .l{fill:none;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+      .card{fill:#0E1530;stroke:#1E2A52;stroke-width:1.5}
+    </style>
+  </defs>
+
+  <rect width="1200" height="675" fill="url(#bg)"/>
+  <rect width="1200" height="675" fill="url(#grid)"/>
+
+  <text class="tt" x="60" y="64" font-size="24">Presupuesto de respuesta: 150 ms</text>
+  <text class="ts" x="60" y="92" font-size="14">Cada etapa consume parte del presupuesto; el conjunto decide si el score llega a tiempo.</text>
+
+  <!-- guias de etiquetas -->
+  <path class="l" d="M116 258 V298 M303 258 V298 M653 258 V298 M782 258 V298" stroke="#1E2A52" stroke-width="1.5"/>
+  <path class="l" d="M164 213 V298 M514 213 V298 M732 213 V298" stroke="#1E2A52" stroke-width="1.5"/>
+
+  <text class="ts" x="116" y="250" font-size="13" text-anchor="middle">Recibir</text>
+  <text class="ts" x="164" y="205" font-size="13" text-anchor="middle">Validar</text>
+  <text class="ts" x="303" y="250" font-size="13" text-anchor="middle">Consultar historial</text>
+  <text class="ts" x="514" y="205" font-size="13" text-anchor="middle">Calcular features</text>
+  <text class="ts" x="653" y="250" font-size="13" text-anchor="middle">Ejecutar modelo</text>
+  <text class="ts" x="732" y="205" font-size="13" text-anchor="middle">Reglas de negocio</text>
+  <text class="ts" x="782" y="250" font-size="13" text-anchor="middle">Responder</text>
+
+  <!-- barra de presupuesto -->
+  <rect x="90" y="300" width="49.7" height="72" rx="5" fill="#22D3EE" fill-opacity="0.16" stroke="#22D3EE" stroke-width="1.5"/>
+  <rect x="90" y="300" width="49.7" height="4" rx="2" fill="#22D3EE"/>
+  <rect x="145.7" y="300" width="36.1" height="72" rx="5" fill="#22D3EE" fill-opacity="0.16" stroke="#22D3EE" stroke-width="1.5"/>
+  <rect x="145.7" y="300" width="36.1" height="4" rx="2" fill="#22D3EE"/>
+  <rect x="184.8" y="300" width="234" height="72" rx="5" fill="#FBBF24" fill-opacity="0.16" stroke="#FBBF24" stroke-width="1.5"/>
+  <rect x="184.8" y="300" width="234" height="4" rx="2" fill="#FBBF24"/>
+  <rect x="421.8" y="300" width="181.1" height="72" rx="5" fill="#A78BFA" fill-opacity="0.16" stroke="#A78BFA" stroke-width="1.5"/>
+  <rect x="421.8" y="300" width="181.1" height="4" rx="2" fill="#A78BFA"/>
+  <rect x="605.9" y="300" width="91.8" height="72" rx="5" fill="#A78BFA" fill-opacity="0.16" stroke="#A78BFA" stroke-width="1.5"/>
+  <rect x="605.9" y="300" width="91.8" height="4" rx="2" fill="#A78BFA"/>
+  <rect x="700.7" y="300" width="60.2" height="72" rx="5" fill="#FBBF24" fill-opacity="0.16" stroke="#FBBF24" stroke-width="1.5"/>
+  <rect x="700.7" y="300" width="60.2" height="4" rx="2" fill="#FBBF24"/>
+  <rect x="763.9" y="300" width="33.8" height="72" rx="5" fill="#22D3EE" fill-opacity="0.16" stroke="#22D3EE" stroke-width="1.5"/>
+  <rect x="763.9" y="300" width="33.8" height="4" rx="2" fill="#22D3EE"/>
+  <rect x="800.7" y="300" width="79.3" height="72" rx="5" fill="none" stroke="#8A99C2" stroke-width="1.5" stroke-dasharray="5 5" stroke-opacity="0.6"/>
+
+  <text class="t" x="114.8" y="341" font-size="11" fill="#E6EDF7" text-anchor="middle">10 ms</text>
+  <text class="t" x="163.7" y="341" font-size="11" fill="#E6EDF7" text-anchor="middle">8 ms</text>
+  <text class="t" x="301.8" y="341" font-size="11" fill="#E6EDF7" text-anchor="middle">45 ms</text>
+  <text class="t" x="512.3" y="341" font-size="11" fill="#E6EDF7" text-anchor="middle">35 ms</text>
+  <text class="t" x="651.8" y="341" font-size="11" fill="#E6EDF7" text-anchor="middle">18 ms</text>
+  <text class="t" x="730.8" y="341" font-size="11" fill="#E6EDF7" text-anchor="middle">12 ms</text>
+  <text class="t" x="780.8" y="341" font-size="11" fill="#E6EDF7" text-anchor="middle">7 ms</text>
+  <text class="ts" x="840" y="341" font-size="11" text-anchor="middle">margen</text>
+
+  <!-- eje -->
+  <path class="l" d="M80 380 H890" stroke="#1E2A52" stroke-width="1.5"/>
+  <path class="l" d="M90 372 V388 M353.3 372 V388 M616.7 372 V388 M880 372 V388" stroke="#8A99C2" stroke-width="1.5" stroke-opacity="0.7"/>
+  <text class="ts" x="90" y="406" font-size="12" text-anchor="middle">0 ms</text>
+  <text class="ts" x="353.3" y="406" font-size="12" text-anchor="middle">50 ms</text>
+  <text class="ts" x="616.7" y="406" font-size="12" text-anchor="middle">100 ms</text>
+  <text class="ts" x="880" y="406" font-size="12" text-anchor="middle">150 ms</text>
+
+  <text class="t" x="90" y="466" font-size="15" fill="#E6EDF7">135 ms utilizados · 15 ms de margen</text>
+  <text class="ts" x="90" y="496" font-size="13">El score se entrega dentro del presupuesto en el 95 % de las peticiones.</text>
+
+  <rect class="card" x="90" y="528" width="520" height="88" rx="16"/>
+  <text class="t" x="114" y="560" font-size="13" fill="#E6EDF7">El cuello de botella es la consulta al historial</text>
+  <text class="ts" x="114" y="586" font-size="12">45 de los 135 ms (33 % del presupuesto) se van en un solo paso.</text>
+
+  <!-- panel de percentiles -->
+  <path class="l" d="M912 120 V572" stroke="#1E2A52" stroke-width="1.5"/>
+  <text class="tt" x="936" y="142" font-size="16">Percentiles de latencia</text>
+  <path class="l" d="M936 162 H960" stroke="#FB7185" stroke-width="1.8" stroke-dasharray="5 4"/>
+  <text class="t" x="966" y="166" font-size="11" fill="#FB7185">presupuesto</text>
+
+  <path class="l" d="M940 451.7 H1150" stroke="#8A99C2" stroke-width="1" stroke-dasharray="3 6" stroke-opacity="0.35"/>
+  <path class="l" d="M940 343.3 H1150" stroke="#8A99C2" stroke-width="1" stroke-dasharray="3 6" stroke-opacity="0.35"/>
+  <path class="l" d="M940 250.2 H1150" stroke="#FBBF24" stroke-width="1" stroke-dasharray="3 6" stroke-opacity="0.45"/>
+  <path class="l" d="M940 196 H1150" stroke="#FB7185" stroke-width="1" stroke-dasharray="3 6" stroke-opacity="0.45"/>
+  <text class="ts" x="980" y="348" font-size="10" text-anchor="end">100 ms</text>
+  <text class="ts" x="980" y="456" font-size="10" text-anchor="end">50 ms</text>
+
+  <rect x="990" y="250.2" width="60" height="309.8" rx="6" fill="#FBBF24" fill-opacity="0.16" stroke="#FBBF24" stroke-width="1.5"/>
+  <rect x="1070" y="196" width="60" height="364" rx="6" fill="#FB7185" fill-opacity="0.16" stroke="#FB7185" stroke-width="1.5"/>
+  <text class="t" x="1020" y="274" font-size="13" font-weight="700" fill="#FBBF24" text-anchor="middle">P95</text>
+  <text class="t" x="1100" y="220" font-size="13" font-weight="700" fill="#FB7185" text-anchor="middle">P99</text>
+
+  <path class="l" d="M940 235 H1150" stroke="#FB7185" stroke-width="1.8" stroke-dasharray="7 6" stroke-opacity="0.85"/>
+  <text class="t" x="950" y="230" font-size="12" fill="#FB7185">150 ms</text>
+
+  <path class="l" d="M940 560 H1150" stroke="#1E2A52" stroke-width="1.5"/>
+  <text class="ts" x="1020" y="582" font-size="12" text-anchor="middle">143 ms</text>
+  <text class="ts" x="1100" y="582" font-size="12" text-anchor="middle">168 ms</text>
+  <text class="t" x="1100" y="606" font-size="11" fill="#FB7185" text-anchor="middle">supera el presupuesto</text>
+</svg>

@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img">
+  <title>Deriva de datos: el atacante se adapta y el modelo se desalinea</title>
+  <desc>Dos curvas de distribución superpuestas sobre un eje de tiempo: en cian el perfil de riesgo de antes y en rosa el perfil del atacante después del cambio, con una flecha que señala el cambio de distribución. Una banda sombreada marca la desalineación del borde de decisión del modelo. Arriba a la derecha, un escudo del banco rodeado por una flecha curva representa al atacante que se adapta.</desc>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="40%" r="78%">
+      <stop offset="0%" stop-color="#131C3F"/>
+      <stop offset="100%" stop-color="#070B18"/>
+    </radialGradient>
+    <linearGradient id="gc" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#22D3EE" stop-opacity="0.32"/>
+      <stop offset="100%" stop-color="#22D3EE" stop-opacity="0.02"/>
+    </linearGradient>
+    <linearGradient id="gr" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FB7185" stop-opacity="0.32"/>
+      <stop offset="100%" stop-color="#FB7185" stop-opacity="0.02"/>
+    </linearGradient>
+    <marker id="mRose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#FB7185"/>
+    </marker>
+    <marker id="mAmber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#FBBF24"/>
+    </marker>
+    <style>
+      .t{font-family:Inter,'Segoe UI',system-ui,sans-serif}
+      .tt{font-family:Inter,'Segoe UI',system-ui,sans-serif;font-weight:700;fill:#E6EDF7}
+      .ts{font-family:Inter,'Segoe UI',system-ui,sans-serif;fill:#8A99C2}
+      .l{fill:none;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+    </style>
+  </defs>
+
+  <rect width="1200" height="675" fill="url(#bg)"/>
+
+  <text class="tt" x="60" y="64" font-size="24">Deriva de datos: el atacante se adapta</text>
+  <text class="ts" x="60" y="92" font-size="14">El modelo fue entrenado con una distribución que ya no describe al atacante.</text>
+
+  <!-- pictograma: escudo del banco y atacante que lo rodea -->
+  <g>
+    <path class="l" d="M1112 152 C1134 96 1096 54 1042 50 C992 46 948 78 932 122" stroke="#FB7185" stroke-width="2.6" marker-end="url(#mRose)"/>
+    <circle cx="1112" cy="152" r="7" fill="#FB7185"/>
+    <path d="M1020 68 L1060 84 V120 C1060 148 1042 164 1020 174 C998 164 980 148 980 120 V84 Z" fill="#0E1530" stroke="#34D399" stroke-width="2"/>
+    <path class="l" d="M999 106 L1020 92 L1041 106" stroke="#34D399" stroke-width="1.8"/>
+    <path class="l" d="M1004 110 V122 M1014 110 V122 M1024 110 V122 M1034 110 V122" stroke="#34D399" stroke-width="1.6" stroke-opacity="0.8"/>
+    <path class="l" d="M998 126 H1042" stroke="#34D399" stroke-width="1.8"/>
+    <text class="t" x="1020" y="212" font-size="13" fill="#FB7185" text-anchor="middle">el atacante se adapta</text>
+    <text class="ts" x="1020" y="234" font-size="12" text-anchor="middle">y rodea las defensas del banco</text>
+  </g>
+
+  <!-- zona desalineada -->
+  <rect x="420" y="190" width="100" height="330" fill="#FB7185" fill-opacity="0.09"/>
+  <path class="l" d="M520 190 V520" stroke="#FB7185" stroke-width="1.2" stroke-dasharray="4 6" stroke-opacity="0.5"/>
+  <text class="t" x="470" y="206" font-size="11" fill="#FB7185" text-anchor="middle">desalineación</text>
+
+  <!-- distribuciones -->
+  <path d="M160 520 C190 520 205 300 300 300 C395 300 410 520 440 520 Z" fill="url(#gc)"/>
+  <path class="l" d="M160 520 C190 520 205 300 300 300 C395 300 410 520 440 520" stroke="#22D3EE" stroke-width="2.6"/>
+  <path d="M400 520 C430 520 445 250 540 250 C635 250 650 520 680 520 Z" fill="url(#gr)"/>
+  <path class="l" d="M400 520 C430 520 445 250 540 250 C635 250 650 520 680 520" stroke="#FB7185" stroke-width="2.6"/>
+
+  <!-- borde de decision del modelo -->
+  <path class="l" d="M420 190 V520" stroke="#A78BFA" stroke-width="2" stroke-dasharray="7 6"/>
+  <text class="t" x="426" y="546" font-size="12" fill="#A78BFA">borde de decisión del modelo</text>
+
+  <!-- conjunto de entrenamiento -->
+  <path class="l" d="M300 206 V296" stroke="#FBBF24" stroke-width="1.4" stroke-dasharray="3 5" stroke-opacity="0.8"/>
+  <text class="ts" x="300" y="196" font-size="11" text-anchor="middle">conjunto de entrenamiento</text>
+
+  <!-- cambio de distribucion -->
+  <path class="l" d="M330 152 C370 128 430 128 474 150" stroke="#FBBF24" stroke-width="2.4" marker-end="url(#mAmber)"/>
+  <text class="t" x="402" y="134" font-size="13" fill="#FBBF24" text-anchor="middle">cambio de distribución</text>
+
+  <!-- etiquetas de curvas -->
+  <text class="t" x="215" y="258" font-size="13" fill="#22D3EE" text-anchor="middle">Antes · perfil legítimo</text>
+  <path class="l" d="M686 300 H724" stroke="#FB7185" stroke-width="1.4" stroke-dasharray="3 4" stroke-opacity="0.7"/>
+  <text class="t" x="732" y="304" font-size="13" fill="#FB7185">Después · perfil del atacante</text>
+
+  <!-- ejes -->
+  <path class="l" d="M120 520 H700" stroke="#1E2A52" stroke-width="1.5"/>
+  <text class="ts" x="120" y="546" font-size="12">tiempo</text>
+  <text class="ts" x="112" y="200" font-size="12" text-anchor="end">riesgo</text>
+
+  <text class="t" x="120" y="600" font-size="14" fill="#E6EDF7">Sin reentrenamiento, el modelo sigue usando el corte que aprendió.</text>
+  <text class="ts" x="120" y="624" font-size="12">La deriva se detecta comparando la distribución actual con la del conjunto de entrenamiento.</text>
+</svg>

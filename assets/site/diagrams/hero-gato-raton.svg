@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img">
+  <title>El juego del gato y el ratón en la detección de fraude con tarjetas</title>
+  <desc>Ilustración geométrica abstracta: a la izquierda, la silueta estilizada de un gato en cian que representa al sistema de detección; a la derecha, la silueta de un ratón en rosa que representa al atacante; entre ambos, una tarjeta de crédito estilizada con chip, atravesada por un rayo de datos, y una estela punteada que marca los movimientos de ataque.</desc>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="78%">
+      <stop offset="0%" stop-color="#131C3F"/>
+      <stop offset="100%" stop-color="#070B18"/>
+    </radialGradient>
+    <linearGradient id="beam" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#A78BFA"/>
+      <stop offset="55%" stop-color="#22D3EE"/>
+      <stop offset="100%" stop-color="#FBBF24"/>
+    </linearGradient>
+    <linearGradient id="cardg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1A2550"/>
+      <stop offset="100%" stop-color="#0E1530"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#22D3EE" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#22D3EE" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#16204A" stroke-opacity="0.35" stroke-width="1"/>
+    </pattern>
+    <marker id="mCyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#22D3EE"/>
+    </marker>
+    <marker id="mRose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#FB7185"/>
+    </marker>
+    <style>
+      .t{font-family:Inter,'Segoe UI',system-ui,sans-serif}
+      .tt{font-family:Inter,'Segoe UI',system-ui,sans-serif;font-weight:700;fill:#E6EDF7}
+      .ts{font-family:Inter,'Segoe UI',system-ui,sans-serif;fill:#8A99C2}
+      .tc{font-family:Inter,'Segoe UI',system-ui,sans-serif;fill:#22D3EE}
+      .tr{font-family:Inter,'Segoe UI',system-ui,sans-serif;fill:#FB7185}
+      .l{fill:none;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+      .card{fill:#0E1530;stroke:#1E2A52;stroke-width:1.5}
+    </style>
+  </defs>
+
+  <rect width="1200" height="675" fill="url(#bg)"/>
+  <rect width="1200" height="675" fill="url(#grid)"/>
+  <ellipse cx="600" cy="340" rx="230" ry="150" fill="url(#halo)"/>
+
+  <!-- estela punteada del tablero -->
+  <path class="l" d="M372 336 C470 246 700 244 872 322" stroke="#8A99C2" stroke-opacity="0.45" stroke-width="2" stroke-dasharray="2 11"/>
+  <path class="l" d="M872 322 C812 296 756 288 712 296" stroke="#FB7185" stroke-width="3" stroke-dasharray="4 11" marker-end="url(#mRose)"/>
+  <path class="l" d="M706 336 C778 340 826 360 868 392" stroke="#22D3EE" stroke-width="2.5" stroke-dasharray="3 12" marker-end="url(#mCyan)" stroke-opacity="0.85"/>
+  <circle cx="640" cy="272" r="3.5" fill="#FB7185" opacity="0.7"/>
+  <circle cx="596" cy="258" r="2.5" fill="#FB7185" opacity="0.45"/>
+  <circle cx="768" cy="316" r="3" fill="#22D3EE" opacity="0.7"/>
+
+  <!-- GATO: silueta geométrica (detección) -->
+  <g>
+    <path class="l" d="M322 430 C374 446 400 412 388 370" stroke="#22D3EE" stroke-width="3" stroke-opacity="0.85"/>
+    <path d="M214 300 C200 344 202 400 232 428 C254 448 296 448 316 424 C338 396 336 340 322 306 Z" fill="#0E1530" stroke="#22D3EE" stroke-width="2.5" stroke-linejoin="round"/>
+    <ellipse cx="234" cy="432" rx="24" ry="9" fill="#0E1530" stroke="#22D3EE" stroke-width="2" stroke-opacity="0.8"/>
+    <ellipse cx="296" cy="436" rx="24" ry="9" fill="#0E1530" stroke="#22D3EE" stroke-width="2" stroke-opacity="0.8"/>
+    <polygon points="218,228 230,152 286,206" fill="#0E1530" stroke="#22D3EE" stroke-width="2.5" stroke-linejoin="round"/>
+    <polygon points="296,206 342,152 350,228" fill="#0E1530" stroke="#22D3EE" stroke-width="2.5" stroke-linejoin="round"/>
+    <polygon points="230,214 236,168 272,198" fill="#22D3EE" opacity="0.18"/>
+    <polygon points="310,198 336,168 338,212" fill="#22D3EE" opacity="0.18"/>
+    <circle cx="263" cy="250" r="54" fill="#0E1530" stroke="#22D3EE" stroke-width="2.5"/>
+    <ellipse cx="241" cy="246" rx="4" ry="9" fill="#22D3EE"/>
+    <ellipse cx="289" cy="246" rx="4" ry="9" fill="#22D3EE"/>
+    <path d="M262 270 h9 l-4.5 7 z" fill="#22D3EE" opacity="0.85"/>
+    <path class="l" d="M238 278 L176 266 M236 288 L170 290 M288 278 L352 266 M290 288 L356 290" stroke="#22D3EE" stroke-width="1.6" stroke-opacity="0.55"/>
+  </g>
+
+  <!-- RATÓN: silueta geométrica (atacante) -->
+  <g>
+    <path class="l" d="M1050 426 C1094 422 1102 382 1078 360" stroke="#FB7185" stroke-width="2.5" stroke-opacity="0.85"/>
+    <ellipse cx="1000" cy="424" rx="52" ry="34" fill="#0E1530" stroke="#FB7185" stroke-width="2.5"/>
+    <ellipse cx="972" cy="456" rx="13" ry="6" fill="#0E1530" stroke="#FB7185" stroke-width="1.8" stroke-opacity="0.8"/>
+    <ellipse cx="1030" cy="458" rx="13" ry="6" fill="#0E1530" stroke="#FB7185" stroke-width="1.8" stroke-opacity="0.8"/>
+    <circle cx="906" cy="372" r="15" fill="#0E1530" stroke="#FB7185" stroke-width="2"/>
+    <circle cx="940" cy="374" r="15" fill="#0E1530" stroke="#FB7185" stroke-width="2"/>
+    <circle cx="922" cy="398" r="30" fill="#0E1530" stroke="#FB7185" stroke-width="2.5"/>
+    <ellipse cx="910" cy="394" rx="4.5" ry="5.5" fill="#FB7185"/>
+    <circle cx="896" cy="406" r="4" fill="#FB7185"/>
+    <path class="l" d="M893 408 L872 402 M893 414 L870 416" stroke="#FB7185" stroke-width="1.4" stroke-opacity="0.6"/>
+  </g>
+
+  <!-- TARJETA DE CREDITO -->
+  <g>
+    <rect x="490" y="268" width="220" height="140" rx="18" fill="url(#cardg)" stroke="#1E2A52" stroke-width="2"/>
+    <path class="l" d="M492 300 V286 Q492 270 508 270 H690" stroke="#22D3EE" stroke-width="2" stroke-opacity="0.55"/>
+    <rect x="490" y="326" width="220" height="16" fill="#22D3EE" opacity="0.10"/>
+    <rect x="516" y="290" width="38" height="28" rx="7" fill="#1A2550" stroke="#FBBF24" stroke-width="1.5"/>
+    <path class="l" d="M516 304 h38 M535 290 v28" stroke="#FBBF24" stroke-width="1" stroke-opacity="0.55"/>
+    <text class="t" x="516" y="372" font-size="15" letter-spacing="1.5" fill="#E6EDF7">4530 8812 7734 1190</text>
+  </g>
+
+  <!-- RAYO / VECTOR DE DATOS que atraviesa la tarjeta -->
+  <path class="l" d="M368 512 L468 408 L506 440 L700 250" stroke="url(#beam)" stroke-width="9" stroke-opacity="0.16"/>
+  <path class="l" d="M368 512 L468 408 L506 440 L700 250" stroke="url(#beam)" stroke-width="3" marker-end="url(#mCyan)"/>
+  <circle cx="468" cy="408" r="4" fill="#22D3EE"/>
+  <circle cx="506" cy="440" r="4" fill="#22D3EE"/>
+
+  <!-- alerta sobre la tarjeta -->
+  <circle cx="708" cy="406" r="19" fill="#131C3F" stroke="#FB7185" stroke-width="2"/>
+  <path class="l" d="M708 397 v10" stroke="#FB7185" stroke-width="2.4"/>
+  <circle cx="708" cy="413" r="1.6" fill="#FB7185"/>
+
+  <!-- rotulos -->
+  <text class="ts" x="263" y="540" font-size="14" letter-spacing="3" text-anchor="middle">SISTEMA DE DETECCIÓN</text>
+  <text class="ts" x="996" y="540" font-size="14" letter-spacing="3" text-anchor="middle">ATACANTE</text>
+  <text class="tt" x="600" y="596" font-size="22" text-anchor="middle">El gato y el ratón en el fraude</text>
+  <text class="ts" x="600" y="624" font-size="14" text-anchor="middle">cada transacción es un movimiento en el tablero</text>
+</svg>

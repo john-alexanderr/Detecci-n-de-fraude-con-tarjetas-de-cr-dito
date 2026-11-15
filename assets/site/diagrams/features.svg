@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img">
+  <title>De la transacción al vector de señales</title>
+  <desc>Una transacción central de 80.000 dólares con su tarjeta y cinco tarjetas orbitantes que representan las familias de variables: velocidad de transacciones, desviación del importe habitual, distancia geográfica, comportamiento temporal y comportamiento del comercio. Abajo, una barra de señal combinada descompone el riesgo en cuatro aportes.</desc>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="40%" r="78%">
+      <stop offset="0%" stop-color="#131C3F"/>
+      <stop offset="100%" stop-color="#070B18"/>
+    </radialGradient>
+    <radialGradient id="halo" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#A78BFA" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#A78BFA" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#16204A" stroke-opacity="0.35" stroke-width="1"/>
+    </pattern>
+    <style>
+      .t{font-family:Inter,'Segoe UI',system-ui,sans-serif}
+      .tt{font-family:Inter,'Segoe UI',system-ui,sans-serif;font-weight:700;fill:#E6EDF7}
+      .ts{font-family:Inter,'Segoe UI',system-ui,sans-serif;fill:#8A99C2}
+      .l{fill:none;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+      .card{fill:#0E1530;stroke:#1E2A52;stroke-width:1.5}
+    </style>
+  </defs>
+
+  <rect width="1200" height="675" fill="url(#bg)"/>
+  <rect width="1200" height="675" fill="url(#grid)"/>
+  <ellipse cx="600" cy="310" rx="190" ry="130" fill="url(#halo)"/>
+
+  <text class="tt" x="60" y="64" font-size="24">De la transacción al vector de señales</text>
+  <text class="ts" x="60" y="92" font-size="14">Cinco familias de variables convierten una operación en features comparables.</text>
+
+  <!-- conectores punteados -->
+  <path class="l" d="M280 188 L468 258" stroke="#2A3866" stroke-width="1.8" stroke-dasharray="4 6"/>
+  <path class="l" d="M920 188 L732 258" stroke="#2A3866" stroke-width="1.8" stroke-dasharray="4 6"/>
+  <path class="l" d="M280 428 L468 352" stroke="#2A3866" stroke-width="1.8" stroke-dasharray="4 6"/>
+  <path class="l" d="M920 428 L732 352" stroke="#2A3866" stroke-width="1.8" stroke-dasharray="4 6"/>
+    <path class="l" d="M600 398 V428" stroke="#2A3866" stroke-width="1.8" stroke-dasharray="4 6"/>
+
+  <!-- tarjeta central: la transaccion -->
+  <g>
+    <rect x="470" y="225" width="260" height="170" rx="18" fill="#0E1530" stroke="#1E2A52" stroke-width="1.5"/>
+    <rect x="492" y="246" width="26" height="20" rx="5" fill="#1A2550" stroke="#FBBF24" stroke-width="1.3"/>
+    <path class="l" d="M492 256 h26 M505 246 v20" stroke="#FBBF24" stroke-width="0.9" stroke-opacity="0.5"/>
+    <rect x="628" y="245" width="84" height="24" rx="12" fill="#FB7185" fill-opacity="0.14" stroke="#FB7185" stroke-width="1"/>
+    <text class="t" x="670" y="261" font-size="10" fill="#FB7185" text-anchor="middle">score 0,86</text>
+    <text class="ts" x="492" y="292" font-size="12" letter-spacing="2">TARJETA ···· 4417</text>
+    <text class="t" x="492" y="342" font-size="34" font-weight="700" fill="#E6EDF7">$80.000</text>
+    <text class="ts" x="492" y="370" font-size="12">compra en comercio de electrónica</text>
+  </g>
+
+  <!-- A · Velocidad de transacciones -->
+  <g>
+    <rect class="card" x="80" y="140" width="200" height="96" rx="14"/>
+    <rect x="96" y="174" width="7" height="10" rx="2" fill="#22D3EE" fill-opacity="0.35" stroke="#22D3EE" stroke-width="1.4"/>
+    <rect x="107" y="166" width="7" height="18" rx="2" fill="#22D3EE" fill-opacity="0.35" stroke="#22D3EE" stroke-width="1.4"/>
+    <rect x="118" y="156" width="7" height="28" rx="2" fill="#22D3EE" fill-opacity="0.35" stroke="#22D3EE" stroke-width="1.4"/>
+    <circle cx="154" cy="170" r="11" fill="#22D3EE" fill-opacity="0.14" stroke="#22D3EE" stroke-width="1.2"/>
+    <text class="t" x="154" y="174" font-size="10" fill="#22D3EE" text-anchor="middle">A</text>
+    <text class="tt" x="96" y="208" font-size="13">Velocidad de</text>
+    <text class="tt" x="96" y="226" font-size="13">transacciones</text>
+  </g>
+
+  <!-- B · Desviacion del importe habitual -->
+  <g>
+    <rect class="card" x="920" y="140" width="200" height="96" rx="14"/>
+    <path class="l" d="M936 178 L946 178 L951 158 L957 182 L964 168 L972 168" stroke="#FBBF24" stroke-width="1.8"/>
+    <circle cx="951" cy="158" r="3" fill="#FBBF24"/>
+    <circle cx="994" cy="170" r="11" fill="#FBBF24" fill-opacity="0.14" stroke="#FBBF24" stroke-width="1.2"/>
+    <text class="t" x="994" y="174" font-size="10" fill="#FBBF24" text-anchor="middle">B</text>
+    <text class="tt" x="936" y="208" font-size="13">Desviación del</text>
+    <text class="tt" x="936" y="226" font-size="13">importe habitual</text>
+  </g>
+
+  <!-- C · Distancia geografica -->
+  <g>
+    <rect class="card" x="80" y="380" width="200" height="96" rx="14"/>
+    <circle cx="104" cy="412" r="4" fill="#A78BFA"/>
+    <circle cx="104" cy="412" r="10" fill="none" stroke="#A78BFA" stroke-width="1.4" stroke-opacity="0.7"/>
+    <circle cx="104" cy="412" r="16" fill="none" stroke="#A78BFA" stroke-width="1.4" stroke-opacity="0.4"/>
+    <circle cx="154" cy="410" r="11" fill="#A78BFA" fill-opacity="0.14" stroke="#A78BFA" stroke-width="1.2"/>
+    <text class="t" x="154" y="414" font-size="10" fill="#A78BFA" text-anchor="middle">C</text>
+    <text class="tt" x="96" y="448" font-size="13">Distancia</text>
+    <text class="tt" x="96" y="466" font-size="13">geográfica</text>
+  </g>
+
+  <!-- D · Comportamiento temporal -->
+  <g>
+    <rect class="card" x="920" y="380" width="200" height="96" rx="14"/>
+    <circle cx="104" cy="412" r="14" fill="none" stroke="#34D399" stroke-width="1.6"/>
+    <path class="l" d="M104 412 V402 M104 412 L112 417" stroke="#34D399" stroke-width="1.8"/>
+    <circle cx="994" cy="410" r="11" fill="#34D399" fill-opacity="0.14" stroke="#34D399" stroke-width="1.2"/>
+    <text class="t" x="994" y="414" font-size="10" fill="#34D399" text-anchor="middle">D</text>
+    <text class="tt" x="936" y="448" font-size="13">Comportamiento</text>
+    <text class="tt" x="936" y="466" font-size="13">temporal</text>
+  </g>
+
+  <!-- E · Comportamiento del comercio -->
+  <g>
+    <rect class="card" x="490" y="430" width="200" height="96" rx="14"/>
+    <path class="l" d="M506 458 L520 446 L534 458" stroke="#FB7185" stroke-width="1.8"/>
+    <path class="l" d="M508 458 V474 H532 V458" stroke="#FB7185" stroke-width="1.8"/>
+    <path class="l" d="M517 474 V464 H525 V474" stroke="#FB7185" stroke-width="1.4" stroke-opacity="0.7"/>
+    <circle cx="664" cy="458" r="11" fill="#FB7185" fill-opacity="0.14" stroke="#FB7185" stroke-width="1.2"/>
+    <text class="t" x="664" y="462" font-size="10" fill="#FB7185" text-anchor="middle">E</text>
+    <text class="tt" x="506" y="500" font-size="13">Comportamiento</text>
+    <text class="tt" x="506" y="518" font-size="13">del comercio</text>
+  </g>
+
+  <!-- barra de señal combinada -->
+  <g>
+    <rect class="card" x="60" y="548" width="1080" height="82" rx="18"/>
+    <text class="ts" x="90" y="574" font-size="12" letter-spacing="2">SEÑAL COMBINADA</text>
+    <rect x="90" y="584" width="347" height="22" rx="5" fill="#FB7185" fill-opacity="0.5" stroke="#FB7185" stroke-width="1"/>
+    <rect x="437" y="584" width="265" height="22" fill="#FBBF24" fill-opacity="0.5" stroke="#FBBF24" stroke-width="1"/>
+    <rect x="702" y="584" width="224" height="22" fill="#A78BFA" fill-opacity="0.5" stroke="#A78BFA" stroke-width="1"/>
+    <rect x="926" y="584" width="184" height="22" rx="5" fill="#22D3EE" fill-opacity="0.45" stroke="#22D3EE" stroke-width="1"/>
+    <text class="t" x="263" y="622" font-size="10" fill="#E6EDF7" text-anchor="middle">compra alta</text>
+    <text class="t" x="569" y="622" font-size="10" fill="#E6EDF7" text-anchor="middle">dispositivo desconocido</text>
+    <text class="t" x="814" y="622" font-size="10" fill="#E6EDF7" text-anchor="middle">intentos fallidos</text>
+    <text class="t" x="1018" y="622" font-size="10" fill="#E6EDF7" text-anchor="middle">otras operaciones inusuales</text>
+  </g>
+</svg>

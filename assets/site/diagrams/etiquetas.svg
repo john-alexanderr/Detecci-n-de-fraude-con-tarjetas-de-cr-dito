@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img">
+  <title>Retraso de las etiquetas en un detector de fraude</title>
+  <desc>Línea de tiempo con dos momentos: el lunes a las 14:32 el modelo decide aprobar la transacción, y semanas después el titular denuncia el fraude. Entre ambos, una flecha punteada larga marca el retraso de etiquetas dentro de una ventana de maduración sombreada. Abajo, un panel indica que hay 200 operaciones pendientes y 300 confirmadas, con una barra apilada.</desc>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="40%" r="78%">
+      <stop offset="0%" stop-color="#131C3F"/>
+      <stop offset="100%" stop-color="#070B18"/>
+    </radialGradient>
+    <marker id="mAmber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#FBBF24"/>
+    </marker>
+    <marker id="mAxis" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#8A99C2"/>
+    </marker>
+    <style>
+      .t{font-family:Inter,'Segoe UI',system-ui,sans-serif}
+      .tt{font-family:Inter,'Segoe UI',system-ui,sans-serif;font-weight:700;fill:#E6EDF7}
+      .ts{font-family:Inter,'Segoe UI',system-ui,sans-serif;fill:#8A99C2}
+      .l{fill:none;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+      .card{fill:#0E1530;stroke:#1E2A52;stroke-width:1.5}
+    </style>
+  </defs>
+
+  <rect width="1200" height="675" fill="url(#bg)"/>
+
+  <text class="tt" x="60" y="64" font-size="24">El retraso de las etiquetas</text>
+  <text class="ts" x="60" y="92" font-size="14">El modelo decide en segundos; la verdad del fraude llega semanas después.</text>
+
+  <!-- ventana de maduracion -->
+  <rect x="250" y="246" width="630" height="120" rx="16" fill="#FBBF24" fill-opacity="0.07" stroke="#FBBF24" stroke-width="1.2" stroke-dasharray="6 7" stroke-opacity="0.4"/>
+
+  <!-- eje temporal -->
+  <path class="l" d="M120 300 H1096" stroke="#8A99C2" stroke-width="2" stroke-opacity="0.6" marker-end="url(#mAxis)"/>
+
+  <!-- retraso de etiquetas -->
+  <path class="l" d="M266 288 H862" stroke="#FBBF24" stroke-width="2.6" stroke-dasharray="3 9" marker-end="url(#mAmber)" marker-start="url(#mAmber)"/>
+  <text class="t" x="565" y="276" font-size="12" fill="#FBBF24" text-anchor="middle">label delay · retraso de etiquetas</text>
+  <text class="t" x="565" y="356" font-size="12" fill="#FBBF24" text-anchor="middle">ventana de maduración · 2 a 6 semanas</text>
+
+  <!-- momento 1: la decision -->
+  <text class="tt" x="250" y="222" font-size="16" text-anchor="middle">Lunes 14:32</text>
+  <circle cx="250" cy="300" r="11" fill="#0E1530" stroke="#22D3EE" stroke-width="3"/>
+  <circle cx="250" cy="300" r="4" fill="#22D3EE"/>
+  <text class="t" x="250" y="388" font-size="13" fill="#22D3EE" text-anchor="middle">el modelo decide (APROBAR)</text>
+
+  <!-- momento 2: la denuncia -->
+  <text class="tt" x="880" y="222" font-size="16" text-anchor="middle">Semanas después</text>
+  <circle cx="880" cy="300" r="11" fill="#0E1530" stroke="#FB7185" stroke-width="3"/>
+  <circle cx="880" cy="300" r="4" fill="#FB7185"/>
+  <text class="t" x="880" y="388" font-size="13" fill="#FB7185" text-anchor="middle">el titular denuncia el fraude</text>
+
+  <!-- panel de etiquetado -->
+  <rect class="card" x="60" y="430" width="1080" height="180" rx="18"/>
+  <text class="tt" x="90" y="468" font-size="16">Estado del etiquetado</text>
+  <text class="ts" x="90" y="498" font-size="15">200 operaciones aún pendientes, 300 confirmadas</text>
+
+  <rect x="90" y="516" width="612" height="32" rx="6" fill="#34D399" fill-opacity="0.85" stroke="#34D399" stroke-width="1.2"/>
+  <rect x="702" y="516" width="408" height="32" rx="6" fill="#FBBF24" fill-opacity="0.85" stroke="#FBBF24" stroke-width="1.2"/>
+  <text class="t" x="396" y="537" font-size="13" font-weight="700" fill="#05251A" text-anchor="middle">300 confirmadas</text>
+  <text class="t" x="906" y="537" font-size="13" font-weight="700" fill="#2A1B02" text-anchor="middle">200 pendientes</text>
+
+  <text class="ts" x="90" y="580" font-size="13">Las pendientes no pueden evaluar al modelo hasta que el titular confirme la operación.</text>
+</svg>
