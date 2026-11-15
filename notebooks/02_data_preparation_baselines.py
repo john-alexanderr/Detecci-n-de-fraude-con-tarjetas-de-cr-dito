@@ -36,9 +36,12 @@ def _(mo):
 
     Este notebook arma el modelo paso a paso: carga los datos, agrupa los duplicados exactos antes de dividir, construye el pipeline de preprocesamiento y entrena los dos modelos de referencia. **Abrir la aplicación no ejecuta nada**: la división y el entrenamiento se activan con botones.
 
-    ## Paso 1 — Cargar las variables de entrada y la etiqueta
+    ## Paso 1 — Definir qué mira el modelo (`X`) y qué debe predecir (`y`)
 
-    Las 30 variables numéricas (`V1`–`V28`, `Time`, `Amount`) forman `X`; la columna `Class` (0 = legítima, 1 = fraude) es la etiqueta `y`. Todavía no se transforma nada: la tabla original queda intacta.
+    - **`X` (variables independientes)**: las 30 columnas numéricas que el modelo puede usar para decidir —`V1`–`V28`, `Time` y `Amount`—.
+    - **`y` (variable dependiente)**: `Class`, la respuesta que queremos predecir (0 = legítima, 1 = fraude).
+
+    Todavía no se transforma nada: la tabla original queda intacta. Este benchmark conserva `Time` para mantenerse fiel a la configuración preservada; por eso `X` tiene 30 columnas.
     """)
     return
 
@@ -71,6 +74,17 @@ def _(FEATURE_COLUMNS, load_dataset):
 
 
 @app.cell
+def _(features, target):
+    _rows_text = f"{features.shape[0]:,}".replace(",", ".")
+    print(
+        f"X: {_rows_text} filas × {features.shape[1]} variables "
+        f"· y: {_rows_text} etiquetas"
+    )
+    features.head()
+    return
+
+
+@app.cell
 def _(mo):
     mo.md(r"""
     ## Paso 2 — Crear las particiones agrupadas
@@ -84,6 +98,8 @@ def _(mo):
     - **Entrenamiento** (182.276 filas, 314 fraudes): ajusta el pipeline.
     - **Validación** (45.569 filas, 79 fraudes): compara modelos con la prevalencia real.
     - **Prueba externa reservada** (56.962 filas, 99 fraudes): no se usa para elegir nada; solo el MLP la evalúa, una vez, al final.
+
+    **La proporción 80/20.** Un `train_test_split` convencional con `test_size=0.2` separa 227.845 filas para entrenamiento (80 %) y 56.962 para prueba (20 %). Aquí la proporción es la misma, pero se respeta al agrupar: el 80 % de desarrollo se reparte en 182.276 filas para ajustar el modelo (64 % del total) y 45.569 para validar (16 % del total), y el 20 % restante queda como prueba externa. La prueba externa nunca participa de la validación cruzada; la columna `share_of_total_pct` de la tabla lo muestra.
     """)
     return
 
@@ -110,12 +126,17 @@ def _(create_grouped_partitions, features, mo, partition_run_button, target):
 
 @app.cell
 def _(partitions, pd):
+    partition_rows = [
+        len(partitions.x_fit),
+        len(partitions.x_validation),
+        len(partitions.x_test),
+    ]
+    total_rows = sum(partition_rows)
     partition_summary = pd.DataFrame(
         {
-            "rows": [
-                len(partitions.x_fit),
-                len(partitions.x_validation),
-                len(partitions.x_test),
+            "rows": partition_rows,
+            "share_of_total_pct": [
+                100 * value / total_rows for value in partition_rows
             ],
             "frauds": [
                 int(partitions.y_fit.sum()),
@@ -174,6 +195,23 @@ def _(grouped_overlap_count, mo, partitions):
 def _(mo):
     mo.md(r"""
     ## Paso 3 — Construir el pipeline sin fuga de información
+
+    **¿Por qué escalar?** Las variables no están en la misma escala: `Time` supera los 47.000 y `Amount` los 250 de desvío, mientras que `V1`–`V28` rondan 1,5–2. Sin escalar, el algoritmo puede dar más peso a las columnas con números más grandes solo por su magnitud. `StandardScaler` aplica `z = (x − media) / desvío` y deja todas las variables con media 0 y desvío 1.
+    """)
+    return
+
+
+@app.cell
+def _(features):
+    scale_table = features.std().sort_values(ascending=False).to_frame("std")
+    scale_table.head(10)
+    return (scale_table,)
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    La tabla lo confirma: los desvíos más grandes son los de `Time` y `Amount`; las componentes `V1`–`V28` están dos órdenes de magnitud por debajo. Después del escalado, todas las columnas pesan igual en distancia y en gradiente.
 
     El pipeline tiene tres pasos, siempre en este orden:
 
