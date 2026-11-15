@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>El juego del gato y el ratón · Detección de fraude con tarjetas de crédito</title>
+<meta name="description" content="Cómo la Ciencia de Datos, el Machine Learning y la ingeniería de software intentan detener a los delincuentes financieros antes de que sea demasiado tarde. Desbalance, latencia, concept drift, grafos, XAI y los límites honestos de un único dataset.">
+<meta name="author" content="Juan Alejandro Rastellini">
+<meta name="theme-color" content="#070B18">
+<link rel="canonical" href="https://john-alexanderr.github.io/Detecci-n-de-fraude-con-tarjetas-de-cr-dito/">
+<link rel="icon" href="assets/site/favicon.svg" type="image/svg+xml">
+
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Detección de fraude con tarjetas de crédito">
+<meta property="og:title" content="El juego del gato y el ratón">
+<meta property="og:description" content="Los grandes desafíos detrás de un sistema inteligente de detección de fraude con tarjetas de crédito.">
+<meta property="og:url" content="https://john-alexanderr.github.io/Detecci-n-de-fraude-con-tarjetas-de-cr-dito/">
+<meta property="og:image" content="https://john-alexanderr.github.io/Detecci-n-de-fraude-con-tarjetas-de-cr-dito/assets/site/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="El juego del gato y el ratón">
+<meta name="twitter:description" content="Los grandes desafíos detrás de un sistema inteligente de detección de fraude con tarjetas de crédito.">
+<meta name="twitter:image" content="https://john-alexanderr.github.io/Detecci-n-de-fraude-con-tarjetas-de-cr-dito/assets/site/og-image.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Newsreader:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site/style.css">
+</head>
+<body>
+
+<div class="progress" aria-hidden="true"></div>
+
+<header class="topbar">
+  <a class="brand" href="#top">
+    <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
+      <rect x="1.2" y="4.2" width="23.6" height="17.6" rx="4" fill="none" stroke="#22D3EE" stroke-width="1.6"/>
+      <rect x="4.6" y="8" width="5" height="4" rx="1.4" fill="#FBBF24"/>
+      <path d="M4.6 16.4h16.8" stroke="#24305C" stroke-width="1.6" stroke-linecap="round"/>
+      <circle cx="19.6" cy="17.6" r="2.6" fill="#FB7185"/>
+    </svg>
+    <span>Gato y ratón</span>
+  </a>
+  <span class="spacer"></span>
+  <span class="now">Sección <b>Introducción</b></span>
+</header>
+
+<main id="top" class="wrap">
+
+  <!-- ======================================================== HERO -->
+  <div class="hero">
+    <div class="container">
+      <span class="eyebrow"><span class="dot"></span> Trabajo Práctico Integrador · Redes Neuronales</span>
+      <h1>El juego del <span class="grad">gato y el ratón</span></h1>
+      <p class="sub">Cómo la Ciencia de Datos, el Machine Learning y la ingeniería de software intentan detener a los delincuentes financieros antes de que sea demasiado tarde.</p>
+      <div class="meta">
+        <span>Por <b>Juan Alejandro Rastellini</b></span>
+        <span><b>Noviembre 2026</b></span>
+        <span><b>≈ 16 min</b> de lectura</span>
+        <span>Dataset <b>Kaggle · 284.807 transacciones</b></span>
+      </div>
+      <div class="cta">
+        <a class="btn primary" href="https://github.com/john-alexanderr/Detecci-n-de-fraude-con-tarjetas-de-cr-dito">Ver el repositorio</a>
+        <a class="btn" href="#epilogo">Ir al alcance real del proyecto</a>
+        <a class="btn" href="https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud">Dataset original</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== TOC -->
+  <div class="container">
+    <nav class="toc reveal" aria-label="Índice del artículo">
+      <h2>Índice</h2>
+      <ol>
+        <li><a href="#intro">Introducción: una compra, unos milisegundos</a></li>
+        <li><a href="#desbalance">El desbalance extremo de clases</a></li>
+        <li><a href="#latencia">Latencia: decidir antes de la paciencia</a></li>
+        <li><a href="#features">Feature Engineering: el comportamiento detrás</a></li>
+        <li><a href="#costos">El costo asimétrico del error</a></li>
+        <li><a href="#drift">Concept Drift: cuando el delincuente aprende</a></li>
+        <li><a href="#etiquetas">El problema de los datos y las etiquetas</a></li>
+        <li><a href="#grafos">Graph Machine Learning: el fraude como red</a></li>
+        <li><a href="#xai">Explainable AI: por qué el banco sospecha</a></li>
+        <li><a href="#arquitectura">El verdadero desafío: el sistema completo</a></li>
+        <li><a href="#conclusion">Conclusión</a></li>
+        <li><a href="#epilogo">Epílogo: el alcance real con este dataset</a></li>
+      </ol>
+    </nav>
+  </div>
+
+  <!-- ======================================================== INTRO -->
+  <section class="chapter" id="intro" data-short="Introducción">
+    <div class="container">
+      <div class="sec-head reveal">
+        <span class="sec-num">00</span>
+        <div>
+          <h2>Una compra, unos pocos milisegundos, una decisión que puede costar millones</h2>
+          <p class="dek">Son las 14:32 de un martes. Alguien compra un teléfono celular por Internet. Detrás de esa acción aparentemente sencilla ocurre algo extraordinario.</p>
+        </div>
+      </div>
+
+      <div class="prose reveal">
+        <p>Una persona está comprando un teléfono celular por Internet. Ingresa los datos de su tarjeta de crédito, confirma la operación y espera unos segundos.</p>
+        <p>Pero detrás de esa acción aparentemente sencilla ocurre algo extraordinario. En una fracción de segundo, los sistemas de una entidad financiera reciben la información de la compra, analizan el comportamiento histórico del titular, comparan la operación con millones de transacciones anteriores y evalúan si existe alguna señal de fraude.</p>
+        <p>¿Es habitual que esa persona compre productos de ese valor? ¿Está realizando una compra desde una ubicación desconocida? ¿Hizo otras operaciones sospechosas minutos antes? ¿El dispositivo utilizado ya apareció en transacciones fraudulentas?</p>
+        <p>El sistema debe decidir qué hacer: <strong>aprobar, rechazar o solicitar una verificación adicional</strong>. Todo esto sucede mientras el cliente espera frente a una pantalla.</p>
+      </div>
+
+      <figure class="fig reveal">
+        <img src="assets/site/diagrams/hero-gato-raton.svg" alt="Ilustración de un gato geométrico que representa al sistema de detección, una tarjeta de crédito en el centro y un ratón geométrico que representa al atacante, unidos por trayectorias punteadas." width="1200" height="675" loading="lazy">
+        <figcaption><b>El motivo central.</b> Un lado es el sistema que observa; el otro, un adversario que observa al sistema. Cada transacción es un movimiento en el tablero.</figcaption>
+      </figure>
+
+      <div class="prose reveal">
+        <p>Lo interesante es que el sistema no tiene certeza absoluta. No sabe con seguridad si está frente a una compra legítima o ante un delincuente que acaba de obtener los datos de una tarjeta. Tiene que tomar una decisión utilizando probabilidades, patrones de comportamiento y datos que pueden estar incompletos.</p>
+        <p>Y aquí aparece uno de los problemas más interesantes de la Ciencia de Datos aplicada al mundo financiero: <strong>detectar fraudes no es solamente un problema de clasificación. Es un problema de decisiones bajo incertidumbre, restricciones de tiempo y consecuencias económicas reales.</strong></p>
+      </div>
+
+      <div class="pull reveal">La verdadera complejidad de la detección de fraude no es encontrar la señal: es <em>cerrar el círculo antes de que el adversario lo complete</em>.</div>
+    </div>
+  </section>
+
+  <!-- ======================================================== 01 DESBALANCE -->
+  <section class="chapter" id="desbalance" data-short="Desbalance de clases">
+    <div class="container">
+      <div class="sec-head reveal">
+        <span class="sec-num">01</span>
+        <div>
+          <h2>Buscar una aguja en un océano de transacciones</h2>
+          <p class="dek">El primer desafío de cualquier proyecto de detección de fraude: el desbalance extremo de clases.</p>
+        </div>
+      </div>
+
+      <div class="prose reveal">
+        <p>Uno de los primeros desafíos que enfrenta cualquier proyecto de detección de fraude es un problema conocido como <em>Class Imbalance</em> o desbalance de clases.</p>
+        <p>Para entenderlo, imaginemos que un banco procesa un millón de transacciones. De todas ellas, 999.000 son legítimas y solamente 1.000 corresponden a operaciones fraudulentas. El fraude representa apenas el 0,1 % de las operaciones.</p>
+        <p>Ahora imaginemos que construimos un modelo de Machine Learning con una estrategia bastante sencilla: <strong>aprobar absolutamente todas las transacciones</strong>.</p>
+        <p>¿El resultado? El modelo obtiene un 99,9 % de accuracy (exactitud). A primera vista parece extraordinario. Sin embargo, acaba de cometer un error gravísimo: <strong>no detectó ni un solo fraude</strong>.</p>
+        <p>Este ejemplo demuestra por qué la exactitud puede ser una métrica engañosa cuando trabajamos con datos extremadamente desbalanceados. No alcanza con preguntarse cuántas predicciones fueron correctas: también necesitamos saber cuántos frauds conseguimos detectar y cuántas operaciones legítimas rechazamos por equivocación.</p>
+      </div>
+
+      <figure class="fig reveal">
+        <img src="assets/site/diagrams/desbalance.svg" alt="Matriz de mil puntos donde casi todos son cian y unos pocos rose, ampliados por una lupa, con la anotación de que el fraude representa el 0,1727 % de las transacciones." width="1200" height="675" loading="lazy">
+        <figcaption><b>La aguja y el pajar.</b> En nuestro dataset real la proporción es incluso más dura: <b>492 fraudes sobre 284.807 transacciones</b>.</figcaption>
+      </figure>
+
+      <div class="prose reveal">
+        <p>Por eso aparecen otras métricas fundamentales:</p>
+        <ul>
+          <li><strong>Precision:</strong> de todas las operaciones que el modelo identificó como fraudulentas, ¿cuántas realmente lo eran?</li>
+          <li><strong>Recall:</strong> de todos los fraudes existentes, ¿qué porcentaje conseguimos detectar?</li>
+          <li><strong>F1-score:</strong> combina precision y recall en una única medida.</li>
+          <li><strong>PR-AUC:</strong> permite evaluar el equilibrio entre precision y recall a distintos umbrales de decisión, y suele resultar especialmente informativa cuando los fraudes son poco frecuentes.</li>
+        </ul>
+        <p>También existen técnicas para enfrentar este problema, como el sobremuestreo de la clase minoritaria, el submuestreo de la clase mayoritaria y los algoritmos que incorporan ponderaciones diferentes para cada clase.</p>
+        <p>Sin embargo, hay algo importante: <strong>generar artificialmente más ejemplos de fraude no significa crear nuevos fraudes reales.</strong> Las técnicas de balanceo deben utilizarse cuidadosamente y sin contaminar los datos de evaluación.</p>
+      </div>
+
+      <div class="metrics reveal">
+        <div class="metric rose"><div class="v">284.807</div><div class="k">transacciones totales en el dataset</div></div>
+        <div class="metric"><div class="v">492</div><div class="k">operaciones fraudulentas (0,1727 %)</div></div>
+        <div class="metric amber"><div class="v">1 : 578</div><div class="k">relación entre operaciones legítimas y fraudulentas</div></div>
+        <div class="metric violet"><div class="v">0,1727 %</div><div class="k">es la prevalencia real, no una simplifying assumption</div></div>
+      </div>
+
+      <figure class="fig reveal">
+        <img src="assets/site/charts/prevalencia.png" alt="Gráfico de barras en escala logarítmica comparando 284.315 operaciones legítimas con 492 fraudulentas, con anotación del 0,1727 %." width="1500" height="840" loading="lazy">
+        <figcaption><b>Prevalencia real, calculada sobre el CSV completo.</b> Eje logarítmico: en escala lineal la barra de fraude sería una línea de un píxel.</figcaption>
+      </figure>
+
+      <div class="pull rose reveal">La verdadera dificultad no consiste en conseguir que el modelo tenga un porcentaje de aciertos impresionante. Consiste en encontrar esos pocos casos fraudulentos escondidos entre millones de operaciones legítimas.</div>
+    </div>
+  </section>
+
+  <!-- ======================================================== 02 LATENCIA -->
+  <section class="chapter" id="latencia" data-short="Latencia en tiempo real">
+    <div class="container">
+      <div class="sec-head reveal">
+        <span class="sec-num">02</span>
+        <div>
+          <h2>Decidir antes de que el cliente pierda la paciencia</h2>
+          <p class="dek">Un modelo brillantemente preciso que tarda demasiado en responder es, para una autorización, un modelo inútil.</p>
+        </div>
+      </div>
+
+      <div class="prose reveal">
+        <p>Imaginemos que estamos frente a una caja registradora. Pasamos la tarjeta, esperamos la autorización y, después de varios segundos, aparece un mensaje: operación rechazada. La experiencia sería bastante frustrante.</p>
+        <p>Ahora traslademos esa situación a millones de operaciones diarias. Un sistema de detección de fraude no puede tomarse varios minutos para analizar una compra. Debe responder prácticamente en tiempo real.</p>
+        <p>En la industria se habla de <em>Latency</em> y de acuerdos de nivel de servicio conocidos como SLA (<em>Service Level Agreements</em>). La latencia representa el tiempo que transcurre desde que el sistema recibe una solicitud hasta que devuelve una respuesta. En muchos sistemas de autorización financiera, el presupuesto de tiempo disponible puede ser de apenas decenas o cientos de milisegundos, dependiendo de la arquitectura y del contrato con los participantes de la red de pagos.</p>
+      </div>
+
+      <div class="prose reveal">
+        <p><strong>¿Por qué es tan complicado?</strong> Porque el modelo no trabaja aislado. Para evaluar una operación puede necesitar:</p>
+        <ol>
+          <li>Recibir la transacción.</li>
+          <li>Validar sus datos.</li>
+          <li>Consultar información histórica del cliente.</li>
+          <li>Calcular características de comportamiento.</li>
+          <li>Ejecutar el modelo predictivo.</li>
+          <li>Aplicar reglas de negocio.</li>
+          <li>Devolver la decisión al sistema de autorización.</li>
+        </ol>
+        <p>Cada paso consume tiempo. Y si alguno de los servicios externos responde lentamente, toda la operación puede retrasarse.</p>
+        <p>Por eso, un proyecto profesional de detección de fraude no debe limitarse a medir qué tan rápido predice un modelo en una computadora. También debe medir la latencia de todo el sistema, especialmente los percentiles <strong>P95 y P99</strong>.</p>
+        <p>¿Qué soluciones se utilizan? Sistemas de procesamiento en memoria, bases de datos optimizadas para consultas de baja latencia, cachés para recuperar información frecuentemente utilizada, arquitecturas de procesamiento de eventos, modelos optimizados para inferencia rápida y servicios distribuidos y escalables.</p>
+      </div>
+
+      <figure class="fig reveal">
+        <img src="assets/site/diagrams/latencia.svg" alt="Línea de tiempo de un presupuesto de 150 milisegundos repartido entre siete etapas del pipeline, con un panel lateral que compara los percentiles P95 y P99." width="1200" height="675" loading="lazy">
+        <figcaption><b>El presupuesto es el diseño.</b> Siete etapas, un solo contrato: responder antes de que el usuario abandone. El cuello de botella casi nunca es el modelo.</figcaption>
+      </figure>
+
+      <div class="callout amber reveal">
+        <span class="ic">!</span>
+        <p><strong>Una lección importante:</strong> un modelo extraordinariamente preciso que tarda demasiado en responder puede ser inútil para una operación que necesita autorización inmediata.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================== 03 FEATURES -->
+  <section class="chapter" id="features" data-short="Feature Engineering">
+    <div class="container">
+      <div class="sec-head reveal">
+        <span class="sec-num">03</span>
+        <div>
+          <h2>Feature Engineering: descubrir el comportamiento detrás de cada compra</h2>
+          <p class="dek">Esta es, posiblemente, una de las partes más interesantes de un proyecto de detección de fraude.</p>
+        </div>
+      </div>
+
+      <div class="prose reveal">
+        <p>Imaginemos que una persona realiza una compra de 80.000 pesos. ¿Es una operación sospechosa? La respuesta es: depende. Para una persona que habitualmente realiza compras de 10.000 pesos, podría ser una operación inusual. Para otra que realiza compras de 200.000 pesos diariamente, podría ser completamente normal.</p>
+        <p>El importe por sí solo no cuenta toda la historia. Aquí entra en juego la <em>Feature Engineering</em> o ingeniería de características: transformar los datos disponibles en variables que permitan comprender mejor el comportamiento de una operación.</p>
+        <p>En lugar de observar solamente cuánto dinero gastó una persona, podemos analizar cómo se relaciona esa compra con su comportamiento habitual.</p>
+      </div>
+
+      <figure class="fig reveal">
+        <img src="assets/site/diagrams/features.svg" alt="Una transacción central de 80.000 pesos rodeada por cinco tarjetas de variables: velocidad de transacciones, desviación del importe habitual, distancia geográfica, comportamiento temporal y comportamiento del comercio." width="1200" height="675" loading="lazy">
+        <figcaption><b>Cinco señales, ninguna suficiente por sí sola.</b> La potencia aparece cuando se combinan.</figcaption>
+      </figure>
+
+      <div class="prose reveal">
+        <p><strong>A. Velocidad de transacciones.</strong> ¿Cuántas compras realizó el titular durante los últimos cinco minutos? Si normalmente realiza dos compras por día y de repente aparecen quince operaciones en tres minutos, puede existir una señal de alerta.</p>
+        <p><strong>B. Desviación del importe habitual.</strong> ¿Cuánto se aleja el importe de la compra actual respecto de los importes habituales del cliente? Una compra de 100.000 pesos puede ser normal para una persona y extraordinaria para otra.</p>
+        <p><strong>C. Distancia geográfica y velocidad de desplazamiento.</strong> Imaginemos que una tarjeta registra una compra en Buenos Aires y, apenas cinco minutos después, otra en una ubicación geográficamente muy distante. ¿Es físicamente posible que el titular haya realizado ambas operaciones? Esta señal puede ayudar a detectar el uso indebido de una tarjeta, aunque debe contemplar situaciones como compras online, VPN, errores de geolocalización y tarjetas utilizadas legítimamente por terceros autorizados.</p>
+        <p><strong>D. Comportamiento temporal.</strong> ¿El cliente suele comprar durante la mañana y ahora está realizando una secuencia de operaciones a las cuatro de la madrugada? Los horarios también pueden aportar información, siempre que se interpreten considerando los hábitos individuales.</p>
+        <p><strong>E. Comportamiento del comercio.</strong> ¿La compra se realizó en un comercio donde el cliente nunca había operado? ¿El comercio presenta una tasa inusualmente elevada de contracargos?</p>
+      </div>
+
+      <div class="callout cyan reveal">
+        <span class="ic">∑</span>
+        <p><strong>La verdadera potencia aparece al combinar.</strong> Una compra de importe elevado no necesariamente representa un fraude. Una compra en otro país tampoco. Pero una compra elevada, realizada desde un dispositivo desconocido, después de múltiples intentos fallidos y acompañada de otras operaciones inusuales puede representar un riesgo mucho mayor.</p>
+        <p>El desafío consiste en construir variables que permitan reconocer esas relaciones.</p>
+      </div>
+
+      <div class="pull violet reveal">Un buen científico de datos no solamente estudia los números: intenta <em>reconstruir la historia que hay detrás de ellos</em>.</div>
+
+      <div class="prose reveal">
+        <p>En nuestro dataset, la variable <code>Amount</code> es la única con significado de negocio directo. El resto de las variables de comportamiento son componentes <strong>PCA anonimizados</strong>: sabemos que <code>V14</code> correlaciona −0,3025 con la etiqueta de fraude, pero no sabemos <em>qué significa</em> en el mundo real.</p>
+      </div>
+
+      <figure class="fig reveal">
+        <img src="assets/site/charts/amount-clase.png" alt="Histogramas superpuestos de la distribución logarítmica del importe de la transacción para operaciones legítimas y fraudulentas, con la cola derecha larga señalada." width="1500" height="840" loading="lazy">
+        <figcaption><b>El importe del fraude vive en la cola.</b> Asimetría de <code>Amount</code> = 16,98: la media es un pésimo resumen para esta variable.</figcaption>
+      </figure>
+
+      <figure class="fig reveal">
+        <img src="assets/site/charts/correlacion.png" alt="Barras horizontales de las diez variables con mayor correlación absoluta contra la etiqueta de fraude, con V17, V14, V12 y V10 al frente." width="1500" height="840" loading="lazy">
+        <figcaption><b>Las señales más fuertes del dataset.</b> Correlación de Pearson contra <code>Class</code>: V17 (−0,3265), V14 (−0,3025), V12 (−0,2606) y V10 (−0,2169). Son correlaciones, no mecanismos causales.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ======================================================== 04 COSTOS -->
+  <section class="chapter" id="costos" data-short="Costo asimétrico">
+    <div class="container">
+      <div class="sec-head reveal">
+        <span class="sec-num">04</span>
+        <div>
+          <h2>El costo asimétrico del error: equivocarse nunca cuesta lo mismo</h2>
+          <p class="dek">Dos predicciones incorrectas, dos consecuencias completamente distintas.</p>
+        </div>
+      </div>
+
+      <div class="prose reveal">
+        <p>En muchos problemas tradicionales de Machine Learning podemos pensar que los errores tienen consecuencias relativamente similares. En la detección de fraude, esto está lejos de ser cierto.</p>
+        <p>Imaginemos que el modelo analiza dos operaciones: la <strong>operación A</strong> es una compra legítima que termina siendo rechazada; la <strong>operación B</strong> es una compra fraudulenta que termina siendo aprobada. Ambas son predicciones incorrectas, pero sus consecuencias son muy diferentes.</p>
+        <p>En el primer caso, el banco puede perder una venta, generar frustración en el cliente y provocar que este utilice otra tarjeta. En el segundo, puede perder dinero, afrontar costos operativos, gestionar un contracargo y perjudicar al titular de la tarjeta.</p>
+        <p>Esto se conoce como <em>Cost Asymmetry</em> o asimetría de costos.</p>
+      </div>
+
+      <figure class="fig reveal">
+        <img src="assets/site/diagrams/costos.svg" alt="Matriz de decisión de dos por dos con las decisiones aprobar y rechazar cruzadas con operación legítima y operación fraudulenta, coloreadas según el costo de cada error." width="1200" height="675" loading="lazy">
+        <figcaption><b>La matriz de costos.</b> Ninguna celda de la diagonal es gratis: una es la pérdida de una venta, la otra, el dinero del fraude.</figcaption>
+      </figure>
+
+      <div class="prose reveal">
+        <p>Los errores tienen nombres específicos: el <strong>falso positivo</strong> es el modelo que rechaza una compra legítima; el <strong>falso negativo</strong> es el modelo que aprueba una compra fraudulenta. En un proyecto real, ambos tienen costos económicos diferentes, y por eso no siempre conviene utilizar el umbral de clasificación tradicional de 0,5.</p>
+        <p>Supongamos que el modelo estima una probabilidad de fraude del 30 %. ¿Deberíamos rechazar la operación? No necesariamente. La decisión depende del importe involucrado, del costo potencial del fraude, del costo de rechazar una compra legítima y de las alternativas disponibles. Por ejemplo, podríamos establecer tres niveles:</p>
+        <ul>
+          <li><strong>Riesgo bajo:</strong> aprobar automáticamente.</li>
+          <li><strong>Riesgo intermedio:</strong> solicitar autenticación adicional.</li>
+          <li><strong>Riesgo alto:</strong> bloquear o rechazar la operación.</li>
+        </ul>
+        <p>Esto permite construir sistemas mucho más inteligentes que una simple respuesta de sí o no. En términos matemáticos, podemos representar el problema mediante una función de costo esperado:</p>
+      </div>
+
+      <pre><code><span class="hl">Costo esperado</span> = costo de falsos positivos
+             + costo de falsos negativos
+             + costos operativos</code></pre>
+
+      <div class="callout rose reveal">
+        <span class="ic">$</span>
+        <p><strong>La finalidad no es maximizar una métrica de Machine Learning de manera aislada.</strong> Es minimizar las pérdidas esperadas sin deteriorar innecesariamente la experiencia del cliente.</p>
+        <p>Un modelo de fraude no debe ser solamente bueno prediciendo: debe ser bueno <em>tomando decisiones económicamente razonables</em>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================== 05 DRIFT -->
+  <section class="chapter" id="drift" data-short="Concept Drift">
+    <div class="container">
+      <div class="sec-head reveal">
+        <span class="sec-num">05</span>
+        <div>
+          <h2>Concept Drift: cuando los delincuentes aprenden a engañar al modelo</h2>
+          <p class="dek">Uno de los desafíos más fascinantes. Porque el otro lado del juego aprende.</p>
+        </div>
+      </div>
+
+      <div class="prose reveal">
+        <p>Imaginemos que una entidad financiera desarrolla un modelo extraordinariamente efectivo. Durante varios meses detecta correctamente la mayoría de los fraudes. Sus métricas son excelentes y el sistema funciona de manera estable.</p>
+        <p>Sin embargo, un día los resultados empiezan a empeorar. Aumentan los fraudes que pasan inadvertidos. Aparecen patrones que el modelo nunca había visto. Algunas operaciones que antes eran fáciles de identificar ahora parecen completamente normales.</p>
+        <p>¿Qué ocurrió? <strong>El comportamiento del mundo cambió.</strong> En Machine Learning, este fenómeno puede estar relacionado con el <em>Concept Drift</em>: ocurre cuando cambia la relación entre los datos de entrada y el comportamiento que el modelo intenta predecir.</p>
+        <p>En el fraude financiero existen distintas causas:</p>
+        <ul>
+          <li>Los consumidores modifican sus hábitos de compra.</li>
+          <li>Aparecen nuevos comercios y métodos de pago.</li>
+          <li>Cambian las tendencias de consumo.</li>
+          <li>Los delincuentes utilizan dispositivos, cuentas y estrategias diferentes.</li>
+          <li>Surgen nuevas modalidades de robo de credenciales.</li>
+          <li>Los atacantes modifican deliberadamente sus patrones para evitar ser detectados.</li>
+        </ul>
+        <p>Este último punto merece especial atención. <strong>Un delincuente no es un fenómeno natural que permanece quieto esperando que un algoritmo lo estudie.</strong> Es un adversario que puede observar las medidas de seguridad, experimentar con diferentes estrategias y modificar su comportamiento.</p>
+        <p>Por eso, un sistema de detección de fraude se parece mucho a una carrera armamentista tecnológica. El banco desarrolla nuevas técnicas para detectar operaciones sospechosas. Los delincuentes buscan formas de evadirlas. El banco actualiza sus modelos y el ciclo vuelve a comenzar. Aquí aparece el concepto de <em>Adaptive Adversary</em>: un adversario que se adapta a las defensas existentes.</p>
+      </div>
+
+      <figure class="fig reveal">
+        <img src="assets/site/diagrams/drift.svg" alt="Dos curvas de distribución superpuestas, una cian y otra rose, con la frontera de decisión del modelo que deja de separarlas y un pictograma de escudo y ataque." width="1200" height="675" loading="lazy">
+        <figcaption><b>La distribución se mueve y el modelo no.</b> El borde de decisión que ayer separaba bien hoy deja pasar fraude por el medio.</figcaption>
+      </figure>
+
+      <div class="prose reveal">
+        <p>¿Cómo se enfrenta este problema? Mediante un proceso continuo de monitoreo y actualización:</p>
+        <ol>
+          <li>Monitorear las características de las transacciones.</li>
+          <li>Detectar cambios en la distribución de los datos.</li>
+          <li>Analizar cómo evolucionan las métricas del modelo.</li>
+          <li>Investigar nuevas modalidades de fraude.</li>
+          <li>Reentrenar y validar los modelos cuando sea necesario.</li>
+          <li>Desplegar nuevas versiones de manera controlada.</li>
+        </ol>
+        <p>Herramientas como MLflow pueden ayudar a registrar experimentos y versiones de modelos, mientras que sistemas de monitoreo permiten detectar cambios en los datos y en el rendimiento. Pero existe una dificultad adicional: muchas veces el resultado real de una transacción no se conoce inmediatamente. Una compra puede ser aprobada hoy y declarada fraudulenta semanas después. Por lo tanto, evaluar el rendimiento del modelo requiere considerar los retrasos en las etiquetas (<em>label delay</em>).</p>
+      </div>
+
+      <div class="pull amber reveal">Un modelo de fraude no es un producto que se entrena una vez y queda terminado. Es un sistema que necesita <em>aprender continuamente de un entorno que cambia y de adversarios que intentan superarlo</em>.</div>
+    </div>
+  </section>
+
+  <!-- ======================================================== 06 ETIQUETAS -->
+  <section class="chapter" id="etiquetas" data-short="Calidad de datos y etiquetas">
+    <div class="container">
+      <div class="sec-head reveal">
+        <span class="sec-num">06</span>
+        <div>
+          <h2>El problema de los datos: no todo lo que parece fraude realmente lo es</h2>
+          <p class="dek">La calidad de las etiquetas y el momento en que se conoce la verdad.</p>
+        </div>
+      </div>
+
+      <div class="prose reveal">
+        <p>Existe otro desafío que suele pasar inadvertido cuando comenzamos a estudiar Machine Learning: la calidad de las etiquetas. Para entrenar un modelo supervisado necesitamos ejemplos de operaciones legítimas y fraudulentas. Pero ¿cómo sabemos que una transacción fue realmente fraudulenta?</p>
+        <p>En muchos casos, la entidad financiera se entera cuando el titular reclama una operación, cuando se inicia una investigación o cuando aparece un contracargo. Esto genera una dificultad: el sistema puede recibir información sobre un fraude mucho tiempo después de que ocurrió. Además, no todos los fraudes son denunciados. Y una operación rechazada por el sistema probablemente nunca llegue a generar una etiqueta que permita saber qué habría sucedido si hubiese sido aprobada.</p>
+        <p>Este último fenómeno se relaciona con el <em>Selective Labeling</em> o etiquetado selectivo: el modelo influye en qué operaciones llegan a tener resultados observables. Por eso, los datos históricos no siempre representan de manera completa la realidad.</p>
+      </div>
+
+      <figure class="fig reveal">
+        <img src="assets/site/diagrams/etiquetas.svg" alt="Línea de tiempo que muestra una decisión tomada el lunes y una denuncia del titular semanas después, con una ventana de maduración de etiquetas y un panel de casos confirmados y pendientes." width="1200" height="675" loading="lazy">
+        <figcaption><b>La verdad llega tarde.</b> El modelo decidió el lunes; el titular se quejó semanas después.</figcaption>
+      </figure>
+
+      <div class="prose reveal">
+        <p>También debemos evitar una práctica peligrosa: utilizar información que no estaba disponible en el momento de realizar la predicción. Esto se conoce como <em>Data Leakage</em>. Por ejemplo, si entrenamos un modelo utilizando el resultado de una investigación que ocurrió dos semanas después de la compra, estaremos entregándole información del futuro. El modelo parecerá extraordinariamente preciso durante las pruebas, pero fracasará cuando tenga que trabajar en producción.</p>
+        <p>Por eso, en proyectos profesionales se utilizan divisiones temporales de los datos, validaciones que respetan el momento de cada transacción y controles rigurosos sobre la disponibilidad de las variables.</p>
+      </div>
+
+      <div class="prose reveal">
+        <p><strong>El caso extremo es el retraso de las etiquetas.</strong> Imaginemos que el sistema aprueba una compra el lunes. Todo parece normal: el cliente recibe su producto, el comercio recibe el pago. Pero dos semanas después, el titular se comunica con el banco y denuncia que nunca realizó esa compra. Ahora sabemos que aquella transacción era fraudulenta… y que el modelo tuvo que decidir dos semanas antes, cuando todavía no conocía ese resultado.</p>
+        <p>Esto genera un problema interesante: ¿cómo evaluamos el rendimiento de un modelo cuando todavía no sabemos si muchas de sus predicciones fueron correctas? Si durante una semana el modelo detecta 500 operaciones sospechosas, de las cuales solamente 300 fueron investigadas y clasificadas de forma definitiva, evaluar el modelo únicamente con las confirmadas nos da una imagen incompleta de su rendimiento.</p>
+        <p>Una práctica importante consiste en evaluar los modelos mediante ventanas temporales que respetan el tiempo real en que las etiquetas estuvieron disponibles, y monitorear cómo evolucionan las métricas a medida que llegan nuevas confirmaciones.</p>
+      </div>
+
+      <div class="callout violet reveal">
+        <span class="ic">⏳</span>
+        <p><strong>En la detección de fraude, a veces el algoritmo debe tomar una decisión hoy, pero la verdad sobre esa decisión recién aparece semanas después.</strong> Un modelo puede parecer excelente durante los primeros días simplemente porque todavía no conocemos todos los fraudes que dejó pasar.</p>
+      </div>
+
+      <figure class="fig reveal">
+        <img src="assets/site/charts/ventana-temporal.png" alt="Histograma de la variable Time mostrando que el dataset cubre aproximadamente 48 horas de datos." width="1500" height="840" loading="lazy">
+        <figcaption><b>La ventana temporal del dataset real.</b> Dos días de septiembre de 2013: suficiente para entrenar, insuficiente para observar una deriva.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ======================================================== 07 GRAFOS -->
+  <section class="chapter" id="grafos" data-short="Graph Machine Learning">
+    <div class="container">
+      <div class="sec-head reveal">
+        <span class="sec-num">07</span>
+        <div>
+          <h2>Graph Machine Learning: cuando el fraude deja de ser una operación aislada</h2>
+          <p class="dek">El fraude no siempre se esconde dentro de una transacción; muchas veces se esconde en las conexiones entre transacciones.</p>
+        </div>
+      </div>
+
+      <div class="prose reveal">
+        <p>Imaginemos que un banco detecta una compra sospechosa realizada con una tarjeta desconocida. A primera vista, parece un caso aislado. Sin embargo, al investigar un poco más descubre algo interesante: esa tarjeta utilizó el mismo dispositivo que otras cinco tarjetas, que realizaron compras en comercios diferentes, pero que comparten una misma dirección de entrega.</p>
+        <p>¿Casualidad? Tal vez. Pero también podría tratarse de una organización que utiliza múltiples tarjetas para realizar operaciones fraudulentas. Aquí aparece una idea poderosa: <strong>el fraude no siempre se esconde dentro de una transacción; muchas veces se esconde en las conexiones entre transacciones.</strong></p>
+        <p>Los modelos tradicionales suelen analizar cada operación a partir de sus propias características. En cambio, Graph Machine Learning permite estudiar las relaciones entre diferentes entidades. Podemos representar el sistema como una red:</p>
+        <ul>
+          <li>Cada tarjeta es un nodo.</li>
+          <li>Cada cliente es un nodo.</li>
+          <li>Cada dispositivo es un nodo.</li>
+          <li>Cada comercio es un nodo.</li>
+          <li>Las relaciones entre ellos son las conexiones o aristas.</li>
+        </ul>
+        <p>De esta manera, podemos descubrir patrones que serían difíciles de identificar observando las operaciones individualmente. Un modelo basado en grafos podría detectar que diez tarjetas aparentemente independientes, que operan en distintos comercios, forman parte de una estructura compartida.</p>
+      </div>
+
+      <figure class="fig reveal">
+        <img src="assets/site/diagrams/grafo.svg" alt="Red de nodos de cinco tipos —tarjeta, dispositivo, comercio, cliente y dirección— con un anillo de fraude resaltado que comparten cinco tarjetas, un dispositivo y una dirección." width="1200" height="675" loading="lazy">
+        <figcaption><b>El anillo.</b> Cinco tarjetas que nunca se ven entre sí, pero comparten dispositivo y dirección: el grafo las delata.</figcaption>
+      </figure>
+
+      <div class="pull violet reveal">La pregunta deja de ser <em>¿esta compra parece fraudulenta?</em> y pasa a ser <em>¿con qué otras operaciones, dispositivos, tarjetas o personas está relacionada?</em></div>
+    </div>
+  </section>
+
+  <!-- ======================================================== 08 XAI -->
+  <section class="chapter" id="xai" data-short="Explainable AI">
+    <div class="container">
+      <div class="sec-head reveal">
+        <span class="sec-num">08</span>
+        <div>
+          <h2>Explainable AI: cuando el banco necesita saber por qué el algoritmo sospecha</h2>
+          <p class="dek">Un modelo que predice sin explicar no sirve para decidir. Y en fraude, casi siempre hay que decidir.</p>
+        </div>
+      </div>
+
+      <div class="prose reveal">
+        <p>Imaginemos que una persona intenta comprar un electrodoméstico con su tarjeta de crédito. El modelo analiza la operación y determina que existe un riesgo elevado de fraude. El banco rechaza la compra. Pero aparece una pregunta fundamental: ¿por qué?</p>
+        <p>¿Porque el importe era demasiado elevado? ¿Porque el dispositivo era desconocido? ¿Porque se realizaron muchas compras en pocos minutos? ¿O porque existía una relación con otras operaciones sospechosas? Si el sistema simplemente responde «fraude», tenemos un problema.</p>
+        <p>En una industria donde las decisiones pueden afectar directamente a las personas y generar pérdidas económicas, no alcanza con que un algoritmo prediga. También necesitamos comprender sus decisiones. Aquí entra en juego la <em>Explainable AI</em> (XAI), o inteligencia artificial explicable, cuyo objetivo es proporcionar herramientas para entender qué factores influyeron en una predicción.</p>
+      </div>
+
+      <figure class="fig reveal">
+        <img src="assets/site/diagrams/xai.svg" alt="Barras divergentes que muestran la contribución de cada característica al riesgo de una transacción, con la línea de umbral de decisión." width="1200" height="675" loading="lazy">
+        <figcaption><b>Una decisión, explicada.</b> Cada barra es una contribución al score: las que empujan hacia el fraude y las que empujan en contra.</figcaption>
+      </figure>
+
+      <div class="prose reveal">
+        <p>Herramientas como SHAP permiten analizar cuánto contribuyó cada característica a una predicción, aunque las explicaciones deben interpretarse correctamente: <strong>no demuestran causalidad ni garantizan que el modelo haya tomado una decisión correcta</strong>.</p>
+        <p>¿Por qué es tan importante? Porque permite que los analistas investiguen las alertas, detecten comportamientos inesperados del modelo, identifiquen posibles errores y comprendan mejor los factores que intervienen en las decisiones. También facilita las auditorías y la supervisión de sistemas automatizados.</p>
+      </div>
+
+      <div class="pull reveal">Hay una diferencia enorme entre tener un algoritmo que dice <em>«esta compra es sospechosa»</em> y disponer de un sistema que permite investigar <em>qué señales motivaron esa sospecha</em>.</div>
+    </div>
+  </section>
+
+  <!-- ======================================================== 09 ARQUITECTURA -->
+  <section class="chapter" id="arquitectura" data-short="Arquitectura del sistema">
+    <div class="container">
+      <div class="sec-head reveal">
+        <span class="sec-num">09</span>
+        <div>
+          <h2>El verdadero desafío: construir un sistema completo, no solamente un modelo</h2>
+          <p class="dek">Después de conocer todos estos problemas se entiende por qué un proyecto real de detección de fraude requiere mucho más que entrenar un algoritmo de clasificación.</p>
+        </div>
+      </div>
+
+      <div class="prose reveal">
+        <p>Un proyecto real necesita una arquitectura capaz de recibir, procesar, analizar y responder ante millones de operaciones. Podemos imaginar el flujo completo:</p>
+      </div>
+
+      <div class="cards reveal">
+        <div class="card"><h4><span class="n">01</span> Ingesta de datos</h4><p>Recepción de transacciones desde los sistemas financieros.</p></div>
+        <div class="card"><h4><span class="n">02</span> Procesamiento</h4><p>Validación, limpieza y transformación de los datos.</p></div>
+        <div class="card"><h4><span class="n">03</span> Feature Engineering</h4><p>Variables de comportamiento, velocidad, ubicación y patrones históricos.</p></div>
+        <div class="card"><h4><span class="n">04</span> Graph ML</h4><p>Relaciones entre tarjetas, dispositivos, clientes y comercios.</p></div>
+        <div class="card"><h4><span class="n">05</span> Machine Learning</h4><p>Evaluación del riesgo mediante modelos predictivos.</p></div>
+        <div class="card"><h4><span class="n">06</span> Explainable AI</h4><p>Generación de explicaciones sobre los factores de la predicción.</p></div>
+        <div class="card"><h4><span class="n">07</span> Motor de decisiones</h4><p>Combinación de probabilidades, reglas de negocio y costos económicos.</p></div>
+        <div class="card"><h4><span class="n">08</span> API de inferencia</h4><p>El modelo como servicio, capaz de responder rápidamente.</p></div>
+        <div class="card"><h4><span class="n">09</span> Monitoreo</h4><p>Latencia, errores, distribución de datos y rendimiento, considerando el retraso de las etiquetas.</p></div>
+        <div class="card"><h4><span class="n">10</span> Retraining</h4><p>Actualización controlada del modelo cuando aparecen nuevos patrones maduros.</p></div>
+      </div>
+
+      <figure class="fig reveal">
+        <img src="assets/site/diagrams/arquitectura.svg" alt="Diagrama del pipeline antifraude en diez etapas dispuestas en dos filas, con las etapas de tiempo real destacadas y un lazo de reentrenamiento continuo." width="1200" height="675" loading="lazy">
+        <figcaption><b>El sistema completo.</b> Cinco etapas corren por request; el resto existe para que esas cinco puedan seguir corriendo mañana.</figcaption>
+      </figure>
+
+      <div class="prose reveal">
+        <p>En una arquitectura de este tipo pueden intervenir tecnologías como Python, SQL, Apache Kafka, Redis, Scikit-learn, XGBoost, herramientas de Graph Machine Learning, SHAP, MLflow, Airflow, Docker y Kubernetes.</p>
+        <p>No es necesario utilizar todas estas herramientas en cada proyecto. La elección depende del volumen de operaciones, los requisitos de latencia, la infraestructura disponible y los objetivos del negocio. Lo importante es comprender que el modelo es solamente una pieza de un sistema mucho más grande.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================== 10 CONCLUSIÓN -->
+  <section class="chapter" id="conclusion" data-short="Conclusión">
+    <div class="container">
+      <div class="sec-head reveal">
+        <span class="sec-num">10</span>
+        <div>
+          <h2>Detectar el fraude es entender el comportamiento humano en un entorno que nunca deja de cambiar</h2>
+          <p class="dek">La conclusión de la teoría, y el punto donde este proyecto se vuelve concreto.</p>
+        </div>
+      </div>
+
+      <div class="prose reveal">
+        <p>Los proyectos de detección de fraude con tarjetas de crédito representan uno de los escenarios más interesantes para aplicar Ciencia de Datos y Machine Learning. Obligan a trabajar con conjuntos de datos extremadamente desbalanceados, construir variables que representen comportamientos complejos, optimizar decisiones bajo restricciones de tiempo y considerar que equivocarse puede tener consecuencias económicas importantes.</p>
+        <p>Pero quizás el desafío más fascinante sea otro: <strong>los delincuentes también aprenden</strong>. Un modelo puede ser excelente hoy y quedarse obsoleto mañana. Los patrones cambian, las estrategias evolucionan y las defensas deben adaptarse constantemente.</p>
+        <p>Por eso, desarrollar un sistema de detección de fraude no consiste simplemente en encontrar el algoritmo con mayor accuracy. Consiste en construir una infraestructura inteligente, confiable y adaptable, capaz de tomar decisiones rápidas sin perjudicar innecesariamente a los usuarios legítimos.</p>
+      </div>
+
+      <div class="pull rose reveal">Y detrás de cada transacción hay algo más que números, variables y probabilidades: hay <em>personas, dinero, confianza y decisiones que deben tomarse en una fracción de segundo</em>.</div>
+    </div>
+  </section>
+
+  <!-- ======================================================== EPÍLOGO -->
+  <section class="chapter" id="epilogo" data-short="El alcance real">
+    <div class="container">
+      <div class="sec-head reveal">
+        <span class="sec-num">✳</span>
+        <div>
+          <h2>Epílogo: lo que realmente podemos ver con el dataset que tenemos</h2>
+          <p class="dek">Todo lo anterior describe un sistema de producción. Este proyecto trabaja sobre un único dataset público. La diferencia no es un detalle: es el límite honesto de lo que se puede afirmar.</p>
+        </div>
+      </div>
+
+      <div class="prose reveal">
+        <p>El dataset con el que trabajamos es el <a href="https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud" target="_blank" rel="noopener">Credit Card Fraud Detection</a> de Kaggle, fijado en la versión 3 por el código. Son <strong>284.807 transacciones de dos días de septiembre de 2013</strong>, con 30 variables numéricas (<code>Time</code>, <code>Amount</code> y <code>V1</code>–<code>V28</code>, componentes PCA anonimizados) y una etiqueta binaria <code>Class</code>.</p>
+        <p>Es un dataset excelente para ciertas cosas y <strong>estructuralmente incapaz</strong> para otras. A continuación está el mapa honesto.</p>
+      </div>
+
+      <div class="tbl reveal">
+        <table>
+          <thead>
+            <tr>
+              <th>Desafío del artículo</th>
+              <th>¿Lo estudiamos aquí?</th>
+              <th>Por qué, o qué falta</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="highlight">
+              <td><strong>Desbalance extremo de clases</strong></td>
+              <td><span class="tag yes">Sí, es el eje</span></td>
+              <td>492 fraudes sobre 284.807 operaciones (0,1727 %). Es el problema central y se mide con Average Precision, recall y F2.</td>
+            </tr>
+            <tr>
+              <td><strong>Latencia en tiempo real</strong></td>
+              <td><span class="tag no">No medible</span></td>
+              <td>No hay red de pagos, ni streaming, ni SLA: es diseño de arquitectura, no una medición posible aquí.</td>
+            </tr>
+            <tr>
+              <td><strong>Feature Engineering con contexto</strong></td>
+              <td><span class="tag partial">Parcial</span></td>
+              <td>Hay 30 variables, pero <code>V1</code>–<code>V28</code> no tienen semántica de negocio. Sin historial, comercio, dispositivo ni calendario no hay velocidad, distancia ni estacionalidad.</td>
+            </tr>
+            <tr>
+              <td><strong>Costo asimétrico del error</strong></td>
+              <td><span class="tag partial">Solo el marco</span></td>
+              <td>El esquema de tres niveles de riesgo se puede discutir, pero no hay costos reales: todas las métricas usan el umbral por defecto, sin función de costo ni umbral aprobado.</td>
+            </tr>
+            <tr>
+              <td><strong>Concept Drift</strong></td>
+              <td><span class="tag no">No observable</span></td>
+              <td>Una sola ventana de ~48 horas. Sin una segunda ventana comparable no hay deriva que medir, y no existe monitoreo en producción.</td>
+            </tr>
+            <tr>
+              <td><strong>Calidad de etiquetas y Data Leakage</strong></td>
+              <td><span class="tag yes">Sí, y se controla</span></td>
+              <td>Las etiquetas ya están maduras en el CSV. El leakage se combate con particiones agrupadas por variables idénticas y con el test externo reservado.</td>
+            </tr>
+            <tr>
+              <td><strong>Delayed Labels</strong></td>
+              <td><span class="tag no">No observable</span></td>
+              <td>El dataset no expone cuándo ocurrió la denuncia ni la investigación. No se puede observar la maduración de las etiquetas.</td>
+            </tr>
+            <tr>
+              <td><strong>Selective Labeling</strong></td>
+              <td><span class="tag no">No observable</span></td>
+              <td>No hay decisiones de rechazo registradas, solo la etiqueta final. El sesgo de selección no es visible en los datos.</td>
+            </tr>
+            <tr>
+              <td><strong>Graph Machine Learning</strong></td>
+              <td><span class="tag no">Imposible aquí</span></td>
+              <td>Sin identificadores de tarjeta, cliente, comercio, dispositivo o dirección no se puede construir ni un nodo ni una arista.</td>
+            </tr>
+            <tr>
+              <td><strong>Explainable AI</strong></td>
+              <td><span class="tag partial">Parcial y poco útil</span></td>
+              <td>SHAP se puede aplicar a las 28 componentes PCA, pero no a «importe alto» o «dispositivo desconocido»: sin semántica, la explicación no es accionable para un analista.</td>
+            </tr>
+            <tr>
+              <td><strong>Arquitectura completa</strong></td>
+              <td><span class="tag partial">Pipeline local</span></td>
+              <td>Implementamos el flujo como un pipeline Python reproducible con particiones, pipelines sin fuga y experiments versionadas. Sin Kafka, Redis, API ni Kubernetes.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout cyan reveal">
+        <span class="ic">✓</span>
+        <p><strong>La lección honesta:</strong> la mitad de los desafíos del artículo son, en este dataset, <em>preguntas de diseño</em> y no <em>preguntas de medición</em>. Saber distinguir unas de otras es lo que separa un benchmark serio de una demonstration.</p>
+      </div>
+
+      <div class="prose reveal">
+        <p><strong>Lo que sí hicimos, y con qué garantías.</strong></p>
+        <ol>
+          <li><strong>Auditoría y EDA.</strong> Verificación de esquema, tipos, nulos, duplicados y rangos de las 30 variables: 284.807 filas, 0 nulos, 1.081 duplicados exactos (0,3796 %) y ninguna fila con variables idénticas pero etiquetas en conflicto.</li>
+          <li><strong>Particiones agrupadas.</strong> Se calcula un hash solo de las variables de entrada (nunca de la etiqueta) y se usa <code>StratifiedGroupKFold</code> en dos niveles. Resultado: desarrollo 227.845 filas (393 fraudes) y test reservado 56.962 filas (99 fraudes); dentro del desarrollo, 182.276 filas de entrenamiento (314) y 45.569 de validación (79). Con el split estratificado convencional, <strong>293 firmas de variables idénticas cruzaban la frontera</strong>: esa fuga es exactamente lo que el agrupamiento elimina.</li>
+          <li><strong>Baselines sin fuga.</strong> Pipeline <code>StandardScaler → SMOTE(random_state=42) → clasificador</code>, con el escalador y el muestreo ajustados solo con entrenamiento y la validación en prevalencia natural: Random Forest y AdaBoost, evaluados sobre 45.569 filas y 79 frauds.</li>
+          <li><strong>Búsqueda acotada del MLP.</strong> Dos candidatos, <code>StratifiedGroupKFold(3)</code> con scoring <code>average_precision</code>, refit con todos los datos de desarrollo y <strong>una única evaluación del test externo</strong>, sin ajuste de umbral.</li>
+        </ol>
+      </div>
+
+      <figure class="fig reveal">
+        <img src="assets/site/charts/particiones.png" alt="Barras apiladas horizontales de las tres particiones —entrenamiento, validación y test— con el conteo de filas y de fraudes de cada una." width="1500" height="840" loading="lazy">
+        <figcaption><b>Particiones agrupadas, sin fuga.</b> Cada bloque es proporcional al logaritmo de su tamaño para que el tramo de fraude sea visible; el porcentaje de prevalencia se mantiene estable en las tres.</figcaption>
+      </figure>
+
+      <figure class="fig reveal">
+        <img src="assets/site/charts/cv-mlp.png" alt="Barras con error estándar de la Average Precision media en validación cruzada de los dos candidatos de MLP." width="1500" height="840" loading="lazy">
+        <figcaption><b>Una búsqueda honesta.</b> La ventaja del candidato ganador (0,7893 vs 0,7890) es de 0,0003: mucho menor que la variación entre folds (±0,016 y ±0,025). Se ganó por su media, no por evidencia decisiva de superioridad.</figcaption>
+      </figure>
+
+      <div class="tbl reveal">
+        <table>
+          <thead>
+            <tr>
+              <th>Evaluación final del MLP <code>(64, 32)</code> · <code>alpha=1e-4</code></th>
+              <th class="num">Average Precision</th>
+              <th class="num">Precisión</th>
+              <th class="num">Recall</th>
+              <th class="num">F2</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="highlight">
+              <td>Test reservado · 56.962 filas · 99 fraudes</td>
+              <td class="num"><strong>0,8204</strong></td>
+              <td class="num">0,7155</td>
+              <td class="num">0,8384</td>
+              <td class="num">0,8105</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <figure class="fig reveal">
+        <img src="assets/site/charts/matriz-confusion.png" alt="Matriz de confusión del MLP en el test reservado: 56.830 verdaderos negativos, 33 falsos positivos, 16 falsos negativos y 83 verdaderos positivos." width="1500" height="840" loading="lazy">
+        <figcaption><b>La decisión, en números.</b> 83 de 99 frauds detectados (recall 0,8384) a costa de 33 falsos positivos sobre 56.863 operaciones legítimas. Reportamos F2 y no solo F1 porque el negocio prioriza la detección: el costo de dejar pasar un fraude no es comparable al de una alerta extra.</figcaption>
+      </figure>
+
+      <figure class="fig reveal">
+        <img src="assets/site/charts/baselines.png" alt="Comparación de Average Precision, precisión, recall y F2 entre Random Forest, AdaBoost y el MLP." width="1500" height="840" loading="lazy">
+        <figcaption><b>Comparación orientativa.</b> Random Forest y AdaBoost se midieron en validación (79 frauds); el MLP, en el test reservado (99 frauds). Particiones distintas: no es una evaluación común bajo el mismo protocolo.</figcaption>
+      </figure>
+
+      <div class="prose reveal">
+        <p><strong>Y lo que todavía no podemos afirmar.</strong> El holdout contiene 99 frauds: es una estimación incierta, no rendimiento de producción. Ningún modelo está aprobado para decisiones de pago. No ajustamos umbrales, no hay función de costo, no hay validación cruzada para los árboles, la búsqueda del MLP fue acotada a dos candidatos y no exhaustiva, y el dataset cubre apenas dos días de 2013. La ventana temporal no se puede reutilizar para iterar: el test externo se evaluó una vez y debe seguir reservada.</p>
+        <p>El trabajo futuro que el propio proyecto deja abierto es concreto: validar los árboles con validación cruzada, diseñar una comparación justa entre particiones, ajustar umbrales solo con datos de desarrollo y obtener un conjunto de datos posterior para poder hablar de deriva con evidencia en lugar de con teoría.</p>
+      </div>
+
+      <figure class="fig reveal">
+        <img src="assets/site/charts/outliers-amount.png" alt="Porcentaje de operaciones marcadas como atípicas por la regla IQR sobre el importe, por clase, con los centinelas detectados al pie." width="1500" height="840" loading="lazy">
+        <figcaption><b>Calidad de datos, en detalle.</b> La cola de <code>Amount</code> está poblada: el 18,50 % de los fraudes queda fuera de los bigotes de Tukey frente al 11,19 % de las legítimas. Recortar no es gratis.</figcaption>
+      </figure>
+
+      <div class="pull reveal">Publicar un benchmark no es un punto final: es el punto de partida honesto. Saber <em>qué no se puede medir con los datos que tenés</em> es parte del resultado, no una excusa para no publicar.</div>
+
+      <div class="prose reveal">
+        <p>Por eso este artículo termina donde empieza el proyecto. La teoría de arriba describe el sistema ideal; el repositorio describe, con evidencia reproducible, el sistema que se puede construir hoy con un único dataset público. <strong>La distancia entre ambas es el trabajo pendiente</strong> — y conviene que esté escrita, medida y versionada, no escondida detrás de un gráfico bonito.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site">
+  <div class="container">
+    <div class="grid">
+      <div>
+        <h5>Proyecto</h5>
+        <ul>
+          <li><a href="https://github.com/john-alexanderr/Detecci-n-de-fraude-con-tarjetas-de-cr-dito">Repositorio</a></li>
+          <li><a href="https://github.com/john-alexanderr/Detecci-n-de-fraude-con-tarjetas-de-cr-dito/blob/main/README.md">README</a></li>
+          <li><a href="https://github.com/john-alexanderr/Detecci-n-de-fraude-con-tarjetas-de-cr-dito/blob/main/docs/methodology.md">Metodología</a></li>
+          <li><a href="https://github.com/john-alexanderr/Detecci-n-de-fraude-con-tarjetas-de-cr-dito/blob/main/docs/model_card.md">Model card</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Evidencia</h5>
+        <ul>
+          <li><a href="https://github.com/john-alexanderr/Detecci-n-de-fraude-con-tarjetas-de-cr-dito/blob/main/reports/eda_summary.md">Informe de EDA</a></li>
+          <li><a href="https://github.com/john-alexanderr/Detecci-n-de-fraude-con-tarjetas-de-cr-dito/blob/main/reports/baseline_validation.md">Validación de baselines</a></li>
+          <li><a href="https://github.com/john-alexanderr/Detecci-n-de-fraude-con-tarjetas-de-cr-dito/blob/main/reports/mlp_final_evaluation.md">Evaluación final del MLP</a></li>
+          <li><a href="https://github.com/john-alexanderr/Detecci-n-de-fraude-con-tarjetas-de-cr-dito/tree/main/notebooks">Apps Marimo</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Datos</h5>
+        <ul>
+          <li><a href="https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud">Dataset en Kaggle</a></li>
+          <li><a href="https://github.com/john-alexanderr/Detecci-n-de-fraude-con-tarjetas-de-cr-dito/blob/main/docs/data_dictionary.md">Diccionario de datos</a></li>
+          <li><a href="https://github.com/john-alexanderr/Detecci-n-de-fraude-con-tarjetas-de-cr-dito/blob/main/docs/business_requirements.md">Requisitos de negocio</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Stack</h5>
+        <ul>
+          <li>Python 3.12 · scikit-learn</li>
+          <li>imbalanced-learn · pandas · NumPy</li>
+          <li>Marimo · pytest</li>
+          <li>Matplotlib · seaborn</li>
+        </ul>
+      </div>
+    </div>
+    <p class="note">Las cifras de este artículo provienen de los reportes versionados del repositorio: la auditoría descriptiva del dataset, la validación agrupada de los baselines y la evaluación final del MLP sobre el test reservado. Los diagramas son ilustraciones originales; los gráficos se calcularon directamente sobre <code>creditcard.csv</code>. Ningún modelo descrito está aprobado para decisiones de pago: las estimaciones se apoyan en un holdout de 99 transacciones fraudulentes y en dos días de datos de 2013.</p>
+  </div>
+</footer>
+
+<button class="totop" type="button" aria-label="Volver arriba">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+</button>
+
+<script src="assets/site/app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+# Configuración del sitio publicado con GitHub Pages.
+# El artículo vive en index.html (archivo estático, sin front matter) y sus
+# recursos en assets/site/. El resto del repositorio no forma parte del sitio.
+
+title: "El juego del gato y el ratón"
+description: >-
+  Cómo la Ciencia de Datos, el Machine Learning y la ingeniería de software
+  intentan detener a los delincuentes financieros antes de que sea demasiado
+  tarde. Desbalance extremo, latencia, concept drift, grafos, XAI y los límites
+  honestos de un único dataset.
+lang: es
+
+# El README se excluye para que no compita con index.html como portada.
+exclude:
+  - README.md
+  - Makefile
+  - pyproject.toml
+  - data/
+  - docs/
+  - notebooks/
+  - reports/
+  - src/
+  - tests/
