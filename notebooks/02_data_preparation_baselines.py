@@ -13,6 +13,7 @@ def _():
     from fraud_detection.evaluation import run_baseline_validation
     from fraud_detection.models import build_baseline_pipelines
     from fraud_detection.plots import (
+        plot_adaboost_concept,
         plot_confusion_matrix_concept,
         plot_confusion_matrices,
         plot_per_class_metrics,
@@ -35,6 +36,7 @@ def _():
         load_dataset,
         mo,
         pd,
+        plot_adaboost_concept,
         plot_confusion_matrices,
         plot_confusion_matrix_concept,
         plot_per_class_metrics,
@@ -314,7 +316,7 @@ def _(mo):
 
     **AdaBoost, el otro modelo base**, sigue la idea opuesta: entrena árboles muy pequeños *en secuencia*, y cada uno se concentra en los casos que el anterior clasificó mal. Al final, los votos se ponderan por la calidad de cada árbol. Comparar ambos muestra dos formas distintas de combinar muchos árboles.
 
-    **Ojo con el atajo habitual.** El ejemplo típico termina con `forest.score(test_X, test_y)`, que devuelve 0,9995: eso es exactitud, y con 0,17 % de fraudes no dice casi nada (Paso 5). La matriz que suele acompañar ese ejemplo —TN 56.849, FP 14, FN 10, TP 89— coincide con el tamaño de la partición de prueba de este proyecto (56.962 filas, 99 fraudes), pero aquí la prueba se reserva para el MLP y los modelos base se comparan en validación (Paso 7).
+    **Ojo con el atajo habitual.** El ejemplo típico termina con `forest.score(test_X, test_y)`, que devuelve 0,9995: eso es exactitud, y con 0,17 % de fraudes no dice casi nada (Paso 6). La matriz que suele acompañar ese ejemplo —TN 56.849, FP 14, FN 10, TP 89— coincide con el tamaño de la partición de prueba de este proyecto (56.962 filas, 99 fraudes), pero aquí la prueba se reserva para el MLP y los modelos base se comparan en validación (Paso 8).
     """)
     return
 
@@ -322,11 +324,53 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## Paso 5 — Entender cómo se evalúa: la matriz de confusión
+    ## Paso 5 — ¿Qué es AdaBoost?
+
+    El **impulso adaptativo** (Adaptive Boosting) también combina muchos árboles, pero de otra manera: **en secuencia**, no en paralelo.
+
+    1. Se entrena un **tocón** (*stump*): un árbol de una sola pregunta, con dos hojas.
+    2. Se miran los casos que falló y se les **sube el peso**. El siguiente tocón se concentra en esos casos difíciles.
+    3. Se repite el proceso: cada tocón nuevo corrige en parte al anterior.
+    4. La predicción final es una **votación ponderada**: cada tocón pesa según su acierto. Los que aciertan más, mandan más.
+
+    Por eso se llama *adaptativo*: los pesos de las filas se adaptan en cada ronda a los errores del tocón anterior.
+    """)
+    return
+
+
+@app.cell
+def _(plot_adaboost_concept):
+    plot_adaboost_concept()
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    En scikit-learn se importa desde `sklearn.ensemble` y se entrena como cualquier modelo:
+
+    ```python
+    from sklearn.ensemble import AdaBoostClassifier
+
+    boost = AdaBoostClassifier(random_state=42)
+    boost.fit(partitions.x_fit, partitions.y_fit)
+    ```
+
+    `AdaBoostClassifier` usa por defecto tocones (`DecisionTreeClassifier(max_depth=1)`) y 50 rondas. En este proyecto vive dentro del pipeline, después del escalador y de SMOTE, con `random_state=42` para que sea reproducible.
+
+    **Dos advertencias para la defensa.** Primero: que AdaBoost sea "resistente al sobreajuste" es una verdad a medias — ante ruido en las etiquetas es *sensible*, porque cada ronda sube el peso de los casos mal clasificados; si esos casos son fraudes ambiguos o etiquetas dudosas, el modelo insiste en ellos. Nuestro resultado en validación es la prueba: 1.423 falsas alarmas. Segundo: cuando se lee "el modelo tiene 97 % de precisión", casi siempre se habla de **exactitud**; la precisión de la clase fraude es otra cosa y aquí es 4,8 % (Paso 8).
+    """)
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    ## Paso 6 — Entender cómo se evalúa: la matriz de confusión
 
     Esta parte es la brújula de todo lo que sigue. Si entiendes cómo se lee una matriz de confusión, el resto de las métricas se explica solo.
 
-    ### 5.1 El modelo solo puede responder dos cosas
+    ### 6.1 El modelo solo puede responder dos cosas
 
     Para cada transacción, el modelo elige entre dos respuestas: **legítima (0)** o **fraude (1)**. La realidad también tiene dos posibilidades. Al cruzar ambas aparece una tabla de 2 × 2 con exactamente cuatro resultados posibles. La convención de esta tabla es **filas = clase real**, **columnas = clase predicha**.
     """)
@@ -342,7 +386,7 @@ def _(plot_confusion_matrix_concept):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ### 5.2 Las cuatro combinaciones posibles
+    ### 6.2 Las cuatro combinaciones posibles
 
     - **TP (verdadero positivo)**: era fraude y el modelo dijo fraude. Acierto.
     - **TN (verdadero negativo)**: era legítima y el modelo dijo legítima. Acierto.
@@ -351,7 +395,7 @@ def _(mo):
 
     Los aciertos están en la **diagonal** (TN y TP); los errores quedan fuera de ella (FP y FN).
 
-    ### 5.3 Las cuatro cuentas que resumen todo
+    ### 6.3 Las cuatro cuentas que resumen todo
 
     | Métrica | Fórmula | Qué pregunta responde |
     | --- | --- | --- |
@@ -368,7 +412,7 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ### 5.4 El mismo ejemplo con nuestros números
+    ### 6.4 El mismo ejemplo con nuestros números
 
     En la validación hay **45.490 transacciones legítimas y 79 fraudes**. Random Forest produjo esta matriz:
 
@@ -385,11 +429,11 @@ def _(mo):
 
     Los 15 fraudes que se escaparon (FN) son el costo real del modelo; las 9 falsas alarmas (FP), el ruido que genera.
 
-    ### 5.5 ¿Y si el modelo no aprendiera nada?
+    ### 6.5 ¿Y si el modelo no aprendiera nada?
 
     Un modelo que responda siempre "legítima" tendría `TN = 45.490`, `FP = 0`, `FN = 79`, `TP = 0`. Su exactitud sería `45.490 / 45.569 = 99,83 %`, casi idéntica a la de Random Forest (99,95 %), pero **no detecta un solo fraude**. Ahí se ve por qué la exactitud sola no alcanza cuando las clases están desbalanceadas.
 
-    ### 5.6 Entonces, ¿qué miramos?
+    ### 6.6 Entonces, ¿qué miramos?
 
     La métrica principal es el **área bajo la curva precisión-recall (AUPRC)**, que aquí llamamos `Average Precision`: mide qué tan bien el modelo ordena los fraudes por encima de las legítimas, sin depender de un umbral fijo. Además, los informes usan **F2** en lugar de F1: F2 le da el doble de peso al recall, porque dejar pasar un fraude suele costar más que una falsa alarma.
     """)
@@ -399,7 +443,7 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## Paso 6 — Entrenar y comparar los dos modelos base
+    ## Paso 7 — Entrenar y comparar los dos modelos base
 
     El botón ajusta cada pipeline con las 182.276 filas de entrenamiento (SMOTE incluido dentro del pipeline) y predice la validación. La validación tiene prevalencia natural —79 fraudes en 45.569 filas—, así que las métricas reflejan el desbalance real, no uno inflado por el remuestreo. Al terminar se muestran la tabla de métricas y las dos matrices de confusión con los recuentos reales. En cada matriz, la **diagonal** (TN y TP) son los aciertos; fuera de la diagonal quedan los errores (FP y FN).
     """)
@@ -449,7 +493,7 @@ def _(confusion_matrices, plot_per_class_metrics):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## Paso 7 — Leer los resultados
+    ## Paso 8 — Leer los resultados
 
     La tabla traduce cada matriz a números. Observa de dónde sale cada porcentaje:
 

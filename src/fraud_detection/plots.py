@@ -497,6 +497,207 @@ def plot_per_class_metrics(confusion_matrices: dict[str, list[list[int]]]):
     return fig
 
 
+def plot_adaboost_concept():
+    """Dibuja el entrenamiento secuencial de AdaBoost con tocones y voto ponderado."""
+    from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
+
+    fig, axis = plt.subplots(figsize=(10.2, 6.4))
+    axis.set_xlim(0, 12)
+    axis.set_ylim(0, 7.5)
+    axis.set_aspect("equal")
+    axis.axis("off")
+
+    def box(x, y, width, height, fill, edge):
+        axis.add_patch(
+            FancyBboxPatch(
+                (x + 0.05, y - 0.05),
+                width,
+                height,
+                boxstyle="round,pad=0.02,rounding_size=0.18",
+                facecolor="#0f172a",
+                edgecolor="none",
+                alpha=0.06,
+                zorder=1,
+            )
+        )
+        axis.add_patch(
+            FancyBboxPatch(
+                (x, y),
+                width,
+                height,
+                boxstyle="round,pad=0.02,rounding_size=0.18",
+                facecolor=fill,
+                edgecolor=edge,
+                linewidth=1.4,
+                zorder=2,
+            )
+        )
+
+    def arrow(start, end):
+        axis.add_patch(
+            FancyArrowPatch(
+                start,
+                end,
+                arrowstyle="-|>",
+                mutation_scale=12,
+                linewidth=1.5,
+                color="#94a3b8",
+                shrinkA=2,
+                shrinkB=2,
+                zorder=1,
+            )
+        )
+
+    def stump_icon(x, y):
+        """Tocón: una sola pregunta y dos hojas."""
+        for child_x, child_y in ((x - 0.13, y - 0.14), (x + 0.13, y - 0.14)):
+            axis.plot(
+                [x, child_x],
+                [y + 0.02, child_y],
+                color="#6366f1",
+                linewidth=1.1,
+                zorder=3,
+            )
+            axis.add_patch(
+                plt.Circle(
+                    (child_x, child_y),
+                    0.05,
+                    facecolor="white",
+                    edgecolor="#6366f1",
+                    linewidth=1.1,
+                    zorder=4,
+                )
+            )
+        axis.add_patch(
+            plt.Circle(
+                (x, y + 0.1),
+                0.06,
+                facecolor="#6366f1",
+                edgecolor="#4f46e5",
+                linewidth=1.1,
+                zorder=4,
+            )
+        )
+
+    box(0.2, 3.9, 1.7, 1.2, "#ecfdf5", "#34d399")
+    axis.text(
+        1.05,
+        4.72,
+        "Datos de",
+        ha="center",
+        va="center",
+        fontsize=9.5,
+        fontweight="bold",
+        color="#065f46",
+    )
+    axis.text(
+        1.05,
+        4.38,
+        "entrenamiento",
+        ha="center",
+        va="center",
+        fontsize=9.5,
+        fontweight="bold",
+        color="#065f46",
+    )
+
+    stumps = [(2.3, "1"), (4.7, "2"), (7.1, "n")]
+    for x, label in stumps:
+        box(x, 4.02, 1.8, 0.96, "#eef2ff", "#a5b4fc")
+        stump_icon(x + 0.32, 4.5)
+        axis.text(
+            x + 0.55,
+            4.62,
+            f"Tocón {label}",
+            ha="left",
+            va="center",
+            fontsize=9.2,
+            fontweight="bold",
+            color="#3730a3",
+        )
+        axis.text(
+            x + 0.55,
+            4.36,
+            "profundidad 1",
+            ha="left",
+            va="center",
+            fontsize=7.2,
+            color="#4f46e5",
+        )
+        if label != "n":
+            arrow((x + 1.82, 4.5), (x + 2.38, 4.5))
+
+    arrow((8.92, 4.5), (9.27, 4.5))
+
+    axis.text(
+        5.6,
+        3.5,
+        "en cada ronda, los casos mal clasificados pesan más",
+        ha="center",
+        va="center",
+        fontsize=8.5,
+        style="italic",
+        color="#64748b",
+    )
+
+    box(9.3, 3.55, 2.25, 1.9, "#fff7ed", "#fdba74")
+    axis.text(
+        10.425,
+        4.85,
+        "Votación",
+        ha="center",
+        va="center",
+        fontsize=10.5,
+        fontweight="bold",
+        color="#9a3412",
+    )
+    axis.text(
+        10.425,
+        4.52,
+        "ponderada",
+        ha="center",
+        va="center",
+        fontsize=9,
+        fontweight="bold",
+        color="#9a3412",
+    )
+    axis.text(
+        10.425,
+        4.05,
+        "cada tocón pesa\nsegún su acierto",
+        ha="center",
+        va="center",
+        fontsize=7.4,
+        color="#c2410c",
+    )
+
+    arrow((10.425, 3.5), (10.425, 3.02))
+
+    box(9.72, 1.95, 1.41, 1.05, "#f0fdf4", "#86efac")
+    axis.text(
+        10.425,
+        2.62,
+        "Predicción",
+        ha="center",
+        va="center",
+        fontsize=9.8,
+        fontweight="bold",
+        color="#166534",
+    )
+    axis.text(
+        10.425,
+        2.25,
+        "fraude o legítima",
+        ha="center",
+        va="center",
+        fontsize=7.4,
+        color="#15803d",
+    )
+
+    fig.tight_layout()
+    return fig
+
+
 def plot_pca_marginals(frame: pd.DataFrame):
     components = [f"V{index}" for index in range(1, 29)]
     figure, axes = plt.subplots(4, 7, figsize=(18, 12))
