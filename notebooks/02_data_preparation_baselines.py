@@ -15,6 +15,7 @@ def _():
     from fraud_detection.plots import (
         plot_confusion_matrix_concept,
         plot_confusion_matrices,
+        plot_random_forest_concept,
     )
     from fraud_detection.splitting import (
         create_grouped_partitions,
@@ -35,6 +36,7 @@ def _():
         pd,
         plot_confusion_matrices,
         plot_confusion_matrix_concept,
+        plot_random_forest_concept,
         run_baseline_validation,
     )
 
@@ -274,27 +276,57 @@ def _(SMOTE, StandardScaler, partitions, pd):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## Paso 4 — Entender cómo se evalúa: la matriz de confusión
+    ## Paso 4 — ¿Qué es un bosque aleatorio?
 
-    Antes de entrenar conviene tener claro qué significa "predecir bien". La matriz de confusión compara lo que el modelo predijo con la etiqueta real. Convención de esta tabla: **filas = clase real**, **columnas = clase predicha**.
+    Un **árbol de decisión** es una cadena de preguntas sobre las variables —"¿el importe supera 120 €?", "¿V14 es menor que −3?"— que termina en una hoja con una predicción: fraude o legítima. Es fácil de leer, pero frágil: si cambian un poco los datos de entrenamiento, el árbol puede cambiar por completo.
 
-    Cada celda tiene un nombre:
+    El **bosque aleatorio** (Random Forest) resuelve esa fragilidad plantando muchos árboles distintos y haciéndolos votar:
 
-    - **TP (verdadero positivo)**: era fraude y el modelo dijo fraude. Acierto.
-    - **TN (verdadero negativo)**: era legítima y el modelo dijo legítima. Acierto.
-    - **FP (falso positivo)**: era legítima y el modelo dijo fraude. Falsa alarma (error tipo I).
-    - **FN (falso negativo)**: era fraude y el modelo dijo legítima. Fraude no detectado (error tipo II).
+    1. **Muestras distintas**: cada árbol se entrena con una muestra aleatoria *con reemplazo* (bootstrap) del conjunto de entrenamiento. Ningún árbol ve exactamente los mismos datos.
+    2. **Variables distintas**: en cada corte, cada árbol solo puede elegir entre un subconjunto aleatorio de variables. Así los árboles no se parecen entre sí.
+    3. **Votación**: cada árbol estima una probabilidad de fraude; el bosque promedia esas probabilidades y decide con un umbral (0,5 por defecto).
+    4. **Resultado**: muchos árboles diversos compensan sus errores individuales. Eso es un *ensemble*: el conjunto es más robusto que cualquiera de sus partes.
+    """)
+    return
 
-    De ahí salen las métricas:
 
-    | Métrica | Fórmula | Qué responde |
-    | --- | --- | --- |
-    | Exactitud (_accuracy_) | `(TP + TN) / total` | ¿Qué fracción de todas las respuestas fue correcta? |
-    | Precisión | `TP / (TP + FP)` | De las alertas de fraude, ¿cuántas eran fraude real? |
-    | Recall (exhaustividad) | `TP / (TP + FN)` | De todos los fraudes, ¿cuántos se detectaron? |
-    | F1 | `2 · (precisión · recall) / (precisión + recall)` | Equilibrio entre precisión y recall |
+@app.cell
+def _(plot_random_forest_concept):
+    plot_random_forest_concept()
+    return
 
-    En este problema la exactitud sola engaña: con 0,17 % de fraudes, un modelo que responda siempre "legítima" acierta el 99,8 % y no detecta nada. Por eso la métrica principal es el **área bajo la curva precisión-recall (AUPRC)**, que aquí llamamos `Average Precision`: resume qué tan bien el modelo ordena los fraudes por encima de las legítimas, sin depender de un umbral fijo. El informe usa además **F2** en lugar de F1: F2 da el doble de peso al recall, porque un fraude no detectado suele costar más que una falsa alarma.
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    En scikit-learn el clasificador se importa desde `sklearn.ensemble` y se entrena como cualquier modelo:
+
+    ```python
+    from sklearn.ensemble import RandomForestClassifier
+
+    forest = RandomForestClassifier(n_estimators=200, random_state=42, n_jobs=-1)
+    forest.fit(partitions.x_fit, partitions.y_fit)
+    ```
+
+    En este proyecto el bosque vive dentro del pipeline —después del escalador y de SMOTE— con `n_estimators=200` y `random_state=42` para que el resultado sea reproducible. Los 200 árboles se entrenan en paralelo (`n_jobs=-1`), pero la decisión final sigue siendo un promedio.
+
+    **AdaBoost, el otro modelo base**, sigue la idea opuesta: entrena árboles muy pequeños *en secuencia*, y cada uno se concentra en los casos que el anterior clasificó mal. Al final, los votos se ponderan por la calidad de cada árbol. Comparar ambos muestra dos formas distintas de combinar muchos árboles.
+
+    **Ojo con el atajo habitual.** El ejemplo típico termina con `forest.score(test_X, test_y)`, que devuelve 0,9995: eso es exactitud, y con 0,17 % de fraudes no dice casi nada (Paso 5). La matriz que suele acompañar ese ejemplo —TN 56.849, FP 14, FN 10, TP 89— coincide con el tamaño de la partición de prueba de este proyecto (56.962 filas, 99 fraudes), pero aquí la prueba se reserva para el MLP y los modelos base se comparan en validación (Paso 7).
+    """)
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    ## Paso 5 — Entender cómo se evalúa: la matriz de confusión
+
+    Esta parte es la brújula de todo lo que sigue. Si entiendes cómo se lee una matriz de confusión, el resto de las métricas se explica solo.
+
+    ### 5.1 El modelo solo puede responder dos cosas
+
+    Para cada transacción, el modelo elige entre dos respuestas: **legítima (0)** o **fraude (1)**. La realidad también tiene dos posibilidades. Al cruzar ambas aparece una tabla de 2 × 2 con exactamente cuatro resultados posibles. La convención de esta tabla es **filas = clase real**, **columnas = clase predicha**.
     """)
     return
 
@@ -308,9 +340,66 @@ def _(plot_confusion_matrix_concept):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## Paso 5 — Entrenar y comparar los dos modelos base
+    ### 5.2 Las cuatro combinaciones posibles
 
-    El botón ajusta cada pipeline con las 182.276 filas de entrenamiento (SMOTE incluido dentro del pipeline) y predice la validación. La validación tiene prevalencia natural —79 fraudes en 45.569 filas—, así que las métricas reflejan el desbalance real, no uno inflado por el remuestreo. Al terminar se muestran la tabla de métricas y las dos matrices de confusión con los recuentos reales.
+    - **TP (verdadero positivo)**: era fraude y el modelo dijo fraude. Acierto.
+    - **TN (verdadero negativo)**: era legítima y el modelo dijo legítima. Acierto.
+    - **FP (falso positivo)**: era legítima y el modelo dijo fraude. Falsa alarma (error tipo I).
+    - **FN (falso negativo)**: era fraude y el modelo dijo legítima. Fraude no detectado (error tipo II).
+
+    Los aciertos están en la **diagonal** (TN y TP); los errores quedan fuera de ella (FP y FN).
+
+    ### 5.3 Las cuatro cuentas que resumen todo
+
+    | Métrica | Fórmula | Qué pregunta responde |
+    | --- | --- | --- |
+    | Exactitud (_accuracy_) | `(TP + TN) / total` | ¿Qué fracción de todas las respuestas fue correcta? |
+    | Precisión | `TP / (TP + FP)` | De las alertas de fraude, ¿cuántas eran fraude real? |
+    | Recall (exhaustividad) | `TP / (TP + FN)` | De todos los fraudes, ¿cuántos se detectaron? |
+    | F1 | `2 · (precisión · recall) / (precisión + recall)` | Un solo número que equilibra precisión y recall |
+
+    Precisión y recall tiran para lados opuestos: si el modelo grita "fraude" ante cualquier duda, sube el recall pero se llena de falsas alarmas (baja la precisión); si solo grita cuando está segurísimo, sube la precisión pero deja pasar fraudes (baja el recall).
+    """)
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    ### 5.4 El mismo ejemplo con nuestros números
+
+    En la validación hay **45.490 transacciones legítimas y 79 fraudes**. Random Forest produjo esta matriz:
+
+    |  | Predijo legítima | Predijo fraude |
+    | --- | --- | --- |
+    | **Real legítima** | TN = 45.481 | FP = 9 |
+    | **Real fraude** | FN = 15 | TP = 64 |
+
+    Ahora las fórmulas dejan de ser símbolos y se convierten en cuentas:
+
+    - **Precisión**: de las 73 alertas de fraude (64 + 9), 64 eran fraude real → `64 / 73 = 87,7 %`.
+    - **Recall**: de los 79 fraudes reales (64 + 15), se detectaron 64 → `64 / 79 = 81,0 %`.
+    - **Exactitud**: de las 45.569 transacciones, se clasificaron bien 45.545 (45.481 + 64) → `45.545 / 45.569 = 99,95 %`.
+
+    Los 15 fraudes que se escaparon (FN) son el costo real del modelo; las 9 falsas alarmas (FP), el ruido que genera.
+
+    ### 5.5 ¿Y si el modelo no aprendiera nada?
+
+    Un modelo que responda siempre "legítima" tendría `TN = 45.490`, `FP = 0`, `FN = 79`, `TP = 0`. Su exactitud sería `45.490 / 45.569 = 99,83 %`, casi idéntica a la de Random Forest (99,95 %), pero **no detecta un solo fraude**. Ahí se ve por qué la exactitud sola no alcanza cuando las clases están desbalanceadas.
+
+    ### 5.6 Entonces, ¿qué miramos?
+
+    La métrica principal es el **área bajo la curva precisión-recall (AUPRC)**, que aquí llamamos `Average Precision`: mide qué tan bien el modelo ordena los fraudes por encima de las legítimas, sin depender de un umbral fijo. Además, los informes usan **F2** en lugar de F1: F2 le da el doble de peso al recall, porque dejar pasar un fraude suele costar más que una falsa alarma.
+    """)
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    ## Paso 6 — Entrenar y comparar los dos modelos base
+
+    El botón ajusta cada pipeline con las 182.276 filas de entrenamiento (SMOTE incluido dentro del pipeline) y predice la validación. La validación tiene prevalencia natural —79 fraudes en 45.569 filas—, así que las métricas reflejan el desbalance real, no uno inflado por el remuestreo. Al terminar se muestran la tabla de métricas y las dos matrices de confusión con los recuentos reales. En cada matriz, la **diagonal** (TN y TP) son los aciertos; fuera de la diagonal quedan los errores (FP y FN).
     """)
     return
 
@@ -352,12 +441,21 @@ def _(confusion_matrices, plot_confusion_matrices):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## Paso 6 — Leer los resultados
+    ## Paso 7 — Leer los resultados
+
+    La tabla traduce cada matriz a números. Observa de dónde sale cada porcentaje:
+
+    | Métrica | Random Forest | AdaBoost | Cómo se obtiene |
+    | --- | --- | --- | --- |
+    | Exactitud | 99,95 % | 96,86 % | aciertos (TN + TP) / 45.569 |
+    | Precisión | 87,67 % | 4,82 % | TP / (TP + FP) |
+    | Recall | 81,01 % | 91,14 % | TP / (TP + FN) = TP / 79 |
+    | F2 | 82,26 % | 19,88 % | combina precisión y recall, con peso doble al recall |
 
     Leer las dos matrices con la misma lupa:
 
-    - **Random Forest**: 64 fraudes detectados (TP) y 15 no detectados (FN), con solo 9 falsas alarmas (FP). Es el mejor equilibrio provisional: mayor Average Precision y precisión.
-    - **AdaBoost**: detecta 72 fraudes (TP) y deja escapar 7 (FN), pero dispara 1.423 falsas alarmas (FP). Su recall es más alto; su precisión, muy baja.
+    - **Random Forest**: 64 fraudes detectados (TP) y 15 no detectados (FN), con solo 9 falsas alarmas (FP). De cada 100 alertas que dispara, 88 son fraude real, y encuentra 81 de cada 100 fraudes. Es el mejor equilibrio provisional: mayor Average Precision y precisión.
+    - **AdaBoost**: detecta 72 fraudes (TP) y deja escapar 7 (FN), pero dispara 1.423 falsas alarmas (FP). Encuentra 91 de cada 100 fraudes, pero de cada 100 alertas solo 5 son fraude real: su recall es más alto; su precisión, muy baja.
 
     La comparación tiene una sola división de validación con 79 fraudes. Para estos modelos base no existe validación cruzada, ajuste de umbral ni ajuste de hiperparámetros; la prueba reservada se evaluó solo con el MLP. Consultar [el informe exacto de validación](../reports/baseline_validation.md).
     """)

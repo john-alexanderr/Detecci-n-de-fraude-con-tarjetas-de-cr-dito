@@ -214,6 +214,210 @@ def plot_confusion_matrices(confusion_matrices: dict[str, list[list[int]]]):
     return fig
 
 
+def plot_random_forest_concept():
+    """Dibuja el recorrido de un bosque aleatorio: muestras, árboles y votación."""
+    from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
+
+    fig, axis = plt.subplots(figsize=(10.2, 6.4))
+    axis.set_xlim(0, 12)
+    axis.set_ylim(0, 7.5)
+    axis.set_aspect("equal")
+    axis.axis("off")
+
+    def box(x, y, width, height, fill, edge):
+        axis.add_patch(
+            FancyBboxPatch(
+                (x + 0.05, y - 0.05),
+                width,
+                height,
+                boxstyle="round,pad=0.02,rounding_size=0.18",
+                facecolor="#0f172a",
+                edgecolor="none",
+                alpha=0.06,
+                zorder=1,
+            )
+        )
+        axis.add_patch(
+            FancyBboxPatch(
+                (x, y),
+                width,
+                height,
+                boxstyle="round,pad=0.02,rounding_size=0.18",
+                facecolor=fill,
+                edgecolor=edge,
+                linewidth=1.4,
+                zorder=2,
+            )
+        )
+
+    def arrow(start, end, curvature=0.0):
+        axis.add_patch(
+            FancyArrowPatch(
+                start,
+                end,
+                arrowstyle="-|>",
+                mutation_scale=12,
+                linewidth=1.5,
+                color="#94a3b8",
+                connectionstyle=f"arc3,rad={curvature}",
+                shrinkA=2,
+                shrinkB=2,
+                zorder=1,
+            )
+        )
+
+    def node_icon(x, y):
+        """Mini árbol de decisión: un nodo raíz y dos hijos."""
+        for child_x, child_y in ((x - 0.15, y - 0.13), (x + 0.15, y - 0.13)):
+            axis.plot(
+                [x, child_x],
+                [y + 0.03, child_y],
+                color="#6366f1",
+                linewidth=1.1,
+                zorder=3,
+            )
+            axis.add_patch(
+                plt.Circle(
+                    (child_x, child_y),
+                    0.055,
+                    facecolor="white",
+                    edgecolor="#6366f1",
+                    linewidth=1.1,
+                    zorder=4,
+                )
+            )
+        axis.add_patch(
+            plt.Circle(
+                (x, y + 0.1),
+                0.065,
+                facecolor="#6366f1",
+                edgecolor="#4f46e5",
+                linewidth=1.1,
+                zorder=4,
+            )
+        )
+
+    rows = [6.05, 4.45, 2.85]
+    split_points = [4.75, 4.2, 3.65]
+    curvatures = [-0.08, 0.0, 0.08]
+
+    box(0.2, 2.2, 1.65, 4.2, "#ecfdf5", "#34d399")
+    axis.text(
+        1.025,
+        4.75,
+        "Datos de\nentrenamiento",
+        ha="center",
+        va="center",
+        fontsize=10.5,
+        fontweight="bold",
+        color="#065f46",
+    )
+    axis.text(
+        1.025,
+        3.85,
+        "182.276 filas\n30 variables",
+        ha="center",
+        va="center",
+        fontsize=7.8,
+        color="#047857",
+    )
+
+    axis.plot([1.87, 2.1], [4.3, 4.3], color="#94a3b8", linewidth=1.2, zorder=1)
+    axis.plot([2.1, 2.1], [rows[-1], rows[0]], color="#94a3b8", linewidth=1.2, zorder=1)
+
+    for position, row in enumerate(rows):
+        label = "n" if position == 2 else str(position + 1)
+
+        arrow((2.1, row), (2.3, row))
+
+        box(2.33, row - 0.31, 1.72, 0.62, "#eff6ff", "#93c5fd")
+        axis.text(
+            3.19,
+            row,
+            f"Muestra {label}",
+            ha="center",
+            va="center",
+            fontsize=9.5,
+            fontweight="bold",
+            color="#1e3a8a",
+        )
+        arrow((4.08, row), (4.36, row))
+
+        box(4.4, row - 0.4, 2.25, 0.8, "#eef2ff", "#a5b4fc")
+        node_icon(4.72, row)
+        axis.text(
+            4.96,
+            row + 0.11,
+            f"Árbol {label}",
+            ha="left",
+            va="center",
+            fontsize=9.5,
+            fontweight="bold",
+            color="#3730a3",
+        )
+        axis.text(
+            4.96,
+            row - 0.15,
+            "de decisión",
+            ha="left",
+            va="center",
+            fontsize=7.5,
+            color="#4f46e5",
+        )
+        arrow(
+            (6.68, row),
+            (7.86, split_points[position]),
+            curvature=curvatures[position],
+        )
+
+    box(7.9, 3.5, 2.35, 1.4, "#fff7ed", "#fdba74")
+    axis.text(
+        9.075,
+        4.48,
+        "Votación",
+        ha="center",
+        va="center",
+        fontsize=11,
+        fontweight="bold",
+        color="#9a3412",
+    )
+    axis.text(
+        9.075,
+        4.03,
+        "promedio de las probabilidades",
+        ha="center",
+        va="center",
+        fontsize=7.5,
+        color="#c2410c",
+    )
+
+    arrow((9.075, 3.45), (9.075, 2.85))
+
+    box(8.2, 1.7, 1.75, 1.1, "#f0fdf4", "#86efac")
+    axis.text(
+        9.075,
+        2.4,
+        "Predicción",
+        ha="center",
+        va="center",
+        fontsize=10.5,
+        fontweight="bold",
+        color="#166534",
+    )
+    axis.text(
+        9.075,
+        1.97,
+        "fraude o legítima",
+        ha="center",
+        va="center",
+        fontsize=7.8,
+        color="#15803d",
+    )
+
+    fig.tight_layout()
+    return fig
+
+
 def plot_pca_marginals(frame: pd.DataFrame):
     components = [f"V{index}" for index in range(1, 29)]
     figure, axes = plt.subplots(4, 7, figsize=(18, 12))
