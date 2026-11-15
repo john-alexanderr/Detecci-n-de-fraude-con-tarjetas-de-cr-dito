@@ -19,7 +19,7 @@ La entrada es el dataset de fraude con tarjetas de crédito de Kaggle (versión 
 
 ## Límite del EDA y de la selección
 
-El inventario de la fuente completa en la aplicación de EDA se limita a diagnósticos de integridad de la entrada y a la prevalencia de etiquetas para la estratificación de las particiones. El [informe de EDA](../reports/eda_summary.md) conservado contiene valores exactos de una auditoría descriptiva de la fuente completa previa al modelo; esos resultados históricos no se usaron para seleccionar variables, transformaciones, modelos ni umbrales. Después de una acción explícita en el botón de ejecución, la aplicación actual calcula gráficos e interpretaciones relevantes para el modelo solo a partir de la partición agrupada de desarrollo (entrenamiento externo más validación). No pasa filas de la prueba externa a las funciones de EDA ni reporta recuentos de la prueba externa.
+La aplicación de EDA conserva vistas descriptivas de la fuente completa: inventario, resúmenes de `Amount` (incluido el de fraudes), proporción de clases y dispersión solo de fraudes. Estas vistas incluyen observaciones que luego forman parte de la prueba externa; se mantienen para describir los datos y no se usan para seleccionar variables, transformaciones, modelos ni umbrales. Esta exposición es una limitación del EDA. Después de una acción explícita en el botón de ejecución, los gráficos y análisis relevantes para el modelado usan solo la partición agrupada de desarrollo (entrenamiento más validación); la prueba externa no se analiza por separado en esas vistas.
 
 ## Evaluación
 

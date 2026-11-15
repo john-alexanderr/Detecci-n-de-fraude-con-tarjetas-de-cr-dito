@@ -147,6 +147,7 @@ tests/                Tests livianos con datos sintéticos; sin descargas ni ent
 
 ## Documentación
 
+- [Guía para presentación oral](docs/presentation_guide.md)
 - [Requerimientos de negocio](docs/business_requirements.md)
 - [Diccionario de datos](docs/data_dictionary.md)
 - [Arquitectura](docs/architecture.md)

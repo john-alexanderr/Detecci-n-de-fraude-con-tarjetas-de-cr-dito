@@ -56,15 +56,15 @@ def _(mo):
     mo.md(r"""
     # 01 — Comprensión del dataset y análisis exploratorio
 
-    Construye una visión basada en evidencia del dataset público de fraude con tarjetas de crédito antes del modelado. Esta aplicación descarga la fuente fijada solo cuando el CSV local no existe y nunca edita ni elimina observaciones.
+    Construye una visión basada en evidencia del dataset público [Credit Card Fraud Detection de Kaggle (versión 3)](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud/versions/3) antes del modelado. Esta aplicación descarga la fuente fijada solo cuando el CSV local no existe y nunca edita ni elimina observaciones.
 
     ## Encuadre de negocio y límite de la evaluación
 
     Un equipo de pagos puede aprobar, rechazar, solicitar verificación adicional o revisar una transacción. No detectar un fraude puede aumentar las pérdidas; marcar como sospechosa una actividad legítima puede generar fricción con el cliente. El umbral adecuado depende de los costos y la capacidad de revisión de cada institución, datos que este dataset no proporciona.
 
-    La fuente de Kaggle reporta **284,807 transacciones de dos días de septiembre de 2013**, incluidas **492 fraudes**. `Class` es la variable objetivo binaria (`0` legítima, `1` fraude). La exactitud por sí sola es engañosa con este desequilibrio tan severo; usa Average Precision / PR-AUC, precisión, recall (exhaustividad), F1 o F2 y matrices de confusión.
+    La fuente de Kaggle reporta **284,807 transacciones de dos días de septiembre de 2013**, incluidas **492 fraudes**. `Class` solo toma dos etiquetas discretas (`0` legítima, `1` fraude), por eso la tarea es **clasificación binaria**: asignar cada transacción a una de esas clases, no estimar un valor continuo como en regresión. La exactitud por sí sola es engañosa con este desequilibrio tan severo; usa Average Precision, precisión, recall (exhaustividad), F1 o F2 y matrices de confusión.
 
-    Las celdas de fuente completa que aparecen a continuación se limitan al inventario de la fuente y a la prevalencia de etiquetas necesaria para la estratificación de la división; no son evidencia para seleccionar modelos. Después de hacer clic en un botón de forma explícita, cada gráfico e interpretación de EDA relevante para el modelo usa solo una partición de desarrollo agrupada (entrenamiento externo más validación). La prueba externa no se pasa a las funciones de EDA ni se resume en esta aplicación.
+    La aplicación combina dos alcances. El inventario, los resúmenes de `Amount` (incluido el de fraudes), el gráfico de torta de proporciones y la dispersión solo de fraudes describen la **fuente completa** e incluyen filas que luego quedan en la prueba externa. Se conservan como vistas descriptivas, no para elegir variables, transformaciones, modelos o umbrales; esa exposición es una limitación del EDA. Tras hacer clic en el botón, el EDA relevante para el modelado usa solo el desarrollo agrupado (entrenamiento más validación) como base para las decisiones de modelado.
 
     ## Alcance del dataset
 
@@ -88,9 +88,17 @@ def _(load_dataset, mo, raw_data_path):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## Inventario de la fuente completa y diagnósticos de estratificación
+    **Ruta de los datos.** `load_dataset()` lee el CSV local (o descarga la fuente fijada si falta) y valida el orden del esquema, las 30 entradas numéricas y que `Class` sea binaria y no nula. La carga no cambia filas ni valores. La tabla de inventario muestra dimensiones y recuentos; `df.head()` enseña las primeras cinco filas. Al crear las particiones, `df.drop(columns=["Class"])` aporta `X` y `df["Class"]` aporta `y`, sin modificar el `df` original.
+    """)
+    return
 
-    Las siguientes vistas de la fuente sin procesar describen el esquema, filas de ejemplo, estadísticas resumidas, valores faltantes, duplicados y prevalencia de etiquetas. Solo sirven para revisar la integridad de la entrada y la estratificación de clases; no son evidencia para seleccionar variables, transformaciones, modelos o umbrales.
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    ## Inventario y vistas descriptivas de la fuente completa
+
+    Las siguientes vistas describen el esquema, filas de ejemplo, estadísticas resumidas, valores faltantes, duplicados, importes y prevalencia de etiquetas de toda la fuente. Incluyen la futura prueba externa y son únicamente descriptivas: no se usan para seleccionar variables, transformaciones, modelos ni umbrales.
     """)
     return
 
@@ -144,7 +152,7 @@ def _(df):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ### Estadísticas resumen del importe (`Amount`)
+    ### Estadísticas resumen del importe (`Amount`) — fuente completa
 
     `describe()` resume una columna numérica en ocho valores. Es una forma rápida de entender escala, dispersión y valores extremos antes de modelar:
 
@@ -198,7 +206,7 @@ def _(df, mo):
         f"{_fraud_amounts['max']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
     )
     mo.md(f"""
-    ### Importe de las transacciones fraudulentas
+    ### Importe de las transacciones fraudulentas — fuente completa
 
     Al filtrar solo las operaciones con `Class == 1` quedan **{_fraud_count_text}** transacciones fraudulentas de **{_total_text}** totales. Su importe medio es **{_mean_text} €**, pero la mediana es de apenas **{_median_text} €**: la mayoría de los fraudes son de importe bajo y unos pocos elevan el promedio. El importe máximo de una transacción fraudulenta es **{_max_text} €**.
     """)
@@ -220,7 +228,7 @@ def _(mo):
     mo.md(r"""
     ## EDA de modelado usando solo datos de desarrollo
 
-    La creación de la partición agrupada está condicionada intencionalmente a un botón porque calcula un hash de toda la tabla de variables. La celda de división expone a las celdas de EDA solo la tabla combinada de desarrollo externo (entrenamiento más validación). No se muestran recuentos de la prueba externa ni resultados de EDA derivados de la prueba.
+    La creación de la partición agrupada está condicionada intencionalmente a un botón porque calcula un hash de toda la tabla de variables. La celda de división expone a las vistas de modelado solo la tabla combinada de desarrollo (entrenamiento más validación). Aunque las vistas descriptivas de fuente completa anteriores incluyen filas de la prueba, esta no se analiza por separado ni se usa para tomar decisiones de modelado.
     """)
     return
 
@@ -263,7 +271,9 @@ def _(mo):
     mo.md(r"""
     ### EDA parte 1 — Distribuciones univariadas
 
-    Los gráficos usan solo la partición de desarrollo agrupada, salvo la proporción de clases y la dispersión solo de fraudes, que describen el dataset completo. Las diferencias de distribución por sí solas no demuestran valor predictivo.
+    Los gráficos de modelado usan solo la partición de desarrollo agrupada. Las excepciones descriptivas —el gráfico de torta de clases y la dispersión solo de fraudes— usan la fuente completa e incluyen la futura prueba externa. Las diferencias de distribución por sí solas no demuestran valor predictivo.
+
+    Para leer los helpers: `log1p(Amount)` se aplica a una copia solo para dibujar; las marcas de 1,5 × IQR son diagnósticos y no eliminan filas; `Time` representa segundos transcurridos desde la primera transacción, no una hora de calendario.
     """)
     return
 
@@ -289,9 +299,9 @@ def _(mo):
     mo.md(r"""
     ### Dispersión del importe según la transacción
 
-    Cada punto es una transacción: el eje horizontal muestra su importe real (sin `log1p`, para ver el rango completo) y el eje vertical su posición original en el archivo. El color indica la clase: azul intenso = 0 (legítima) y amarillo = 1 (fraude).
+    Cada punto es una transacción de desarrollo: el eje horizontal muestra su importe real (sin `log1p`, para ver el rango completo) y el eje vertical su posición original en el archivo. El color indica la clase: azul intenso = 0 (legítima) y amarillo = 1 (fraude).
 
-    La gran mayoría de los puntos son azules, así que la mancha amarilla de fraudes es pequeña y hay que mirarla de cerca. Además, no se ven fraudes por encima de 5.000 €: el importe máximo de una operación fraudulenta en todo el dataset es `2.125,87 €`, mientras que las legítimas llegan hasta `25.691,16 €`. Es una observación descriptiva, no una regla de decisión.
+    La gran mayoría de los puntos son azules, así que la mancha amarilla de fraudes es pequeña y hay que mirarla de cerca. Como referencia descriptiva de la fuente completa, el importe máximo fraudulento es `2.125,87 €` y el importe máximo legítimo es `25.691,16 €`. Es una observación descriptiva, no una regla de decisión.
     """)
     return
 
@@ -315,7 +325,7 @@ def _(df, mo):
     fraud_rate_text = f"{fraud_rate:.3f}".replace(".", ",")
     legit_rate_text = f"{legit_rate:.1f}".replace(".", ",")
     mo.md(f"""
-    ### Proporción entre clases
+    ### Proporción entre clases — fuente completa
 
     No es de extrañar que apenas pudiéramos ver los puntos amarillos en el diagrama de dispersión de arriba, ya que solo el **{fraud_rate_text} %** de las transacciones del dataset son fraudulentas ({fraud_text} de {total_text}). Pero en absoluto es una cantidad insignificante.
 
@@ -341,7 +351,7 @@ def _(df, mo):
         f"{_fraud_only.max():,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
     )
     mo.md(f"""
-    ### Dispersión solo de las transacciones fraudulentas
+    ### Dispersión solo de las transacciones fraudulentas — fuente completa
 
     Al aislar únicamente las transacciones con `Class == 1`, la dispersión gana perspectiva: ahora se ven las **{_fraud_only_count}** operaciones fraudulentas del dataset. La mayoría se concentra en importes bajos (mediana de **{_fraud_only_median} €**) y solo unas pocas alcanzan importes altos, hasta un máximo de **{_fraud_only_max} €**.
     """)

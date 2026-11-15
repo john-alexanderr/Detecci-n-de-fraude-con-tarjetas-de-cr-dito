@@ -50,7 +50,7 @@ def _(mo):
     mo.md(r"""
     # 02 — Preparación de datos y modelos base
 
-    Este notebook arma el modelo paso a paso: carga los datos, agrupa los duplicados exactos antes de dividir, construye el pipeline de preprocesamiento y entrena los dos modelos de referencia. **Abrir la aplicación no ejecuta nada**: la división y el entrenamiento se activan con botones.
+    Este notebook arma el modelo paso a paso: carga los datos, agrupa los duplicados exactos antes de dividir, construye el pipeline de preprocesamiento y entrena los dos modelos de referencia. Al abrir la aplicación se carga el CSV y se muestran las dimensiones de `X` e `y` junto con las primeras filas de `X`; los botones habilitan la división agrupada y el ajuste/evaluación de los modelos. Si falta `data/raw/creditcard.csv`, la carga intenta descargar la fuente fijada de Kaggle, por lo que abrir el notebook puede requerir conexión y descargar el archivo.
 
     ## Paso 1 — Definir qué mira el modelo (`X`) y qué debe predecir (`y`)
 
@@ -58,6 +58,8 @@ def _(mo):
     - **`y` (variable dependiente)**: `Class`, la respuesta que queremos predecir (0 = legítima, 1 = fraude).
 
     Todavía no se transforma nada: la tabla original queda intacta. Este benchmark conserva `Time` para mantenerse fiel a la configuración preservada; por eso `X` tiene 30 columnas.
+
+    Al abrir, `load_dataset()` lee y valida el esquema; `features` selecciona las columnas de `FEATURE_COLUMNS` y `target` separa `Class`. La salida de dimensiones cuenta filas y columnas de `X` y etiquetas de `y`; `features.head()` muestra las primeras cinco filas de entradas, no modifica los datos y no es una vista previa de las etiquetas.
     """)
     return
 
@@ -113,9 +115,11 @@ def _(mo):
 
     - **Entrenamiento** (182.276 filas, 314 fraudes): ajusta el pipeline.
     - **Validación** (45.569 filas, 79 fraudes): compara modelos con la prevalencia real.
-    - **Prueba externa reservada** (56.962 filas, 99 fraudes): no se usa para elegir nada; solo el MLP la evalúa, una vez, al final.
+    - **Prueba externa reservada** (56.962 filas, 99 fraudes): no se usa para elegir nada; el MLP la evalúa una sola vez al final. Los dos modelos base se comparan en validación.
 
     **La proporción 80/20.** Un `train_test_split` convencional con `test_size=0.2` separa 227.845 filas para entrenamiento (80 %) y 56.962 para prueba (20 %). Aquí la proporción es la misma, pero se respeta al agrupar: el 80 % de desarrollo se reparte en 182.276 filas para ajustar el modelo (64 % del total) y 45.569 para validar (16 % del total), y el 20 % restante queda como prueba externa. La prueba externa nunca participa de la validación cruzada; la columna `share_of_total_pct` de la tabla lo muestra.
+
+    `mo.stop` detiene esta celda y las que dependen de las particiones mientras el botón no se haya pulsado; no impide que se carguen los datos ni que se muestre la vista previa anterior.
     """)
     return
 
@@ -175,9 +179,9 @@ def _(partitions, pd):
 def _(mo):
     outer_test_note = (
         "Los recuentos de clases de la prueba externa solo se muestran para verificar "
-        "la estratificación. La partición de prueba no se usa para ajustar el "
-        "preprocesamiento, seleccionar variables, modelos o umbrales, ni para "
-        "evaluar modelos."
+        "la estratificación. Esta partición no se usa para ajustar el preprocesamiento "
+        "ni para seleccionar variables, modelos o umbrales. Los dos modelos base se "
+        "evalúan en validación; el MLP (Notebook 03) se evalúa en la prueba una sola vez."
     )
     mo.md(outer_test_note)
     return
@@ -210,16 +214,24 @@ def _(grouped_overlap_count, mo, partitions):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## Paso 3 — Construir el pipeline sin fuga de información
-
-    **¿Por qué escalar?** Las variables no están en la misma escala: `Time` supera los 47.000 y `Amount` los 250 de desvío, mientras que `V1`–`V28` rondan 1,5–2. Sin escalar, el algoritmo puede dar más peso a las columnas con números más grandes solo por su magnitud. `StandardScaler` aplica `z = (x − media) / desvío` y deja todas las variables con media 0 y desvío 1.
+    Cada valor de la salida cuenta identificadores de grupo compartidos por un par de particiones. El `assert` detiene el flujo si alguno no es cero; tres ceros confirman que las filas con variables de entrada idénticas no se repartieron entre entrenamiento, validación y prueba.
     """)
     return
 
 
 @app.cell
-def _(features):
-    scale_table = features.std().sort_values(ascending=False).to_frame("std")
+def _(mo):
+    mo.md(r"""
+    ## Paso 3 — Construir el pipeline sin fuga de información
+
+    **¿Por qué inspeccionar las escalas?** Las variables tienen magnitudes distintas. La tabla siguiente muestra la desviación estándar de cada columna en `partitions.x_fit`, solo como diagnóstico; no transforma los datos ni ajusta el escalador. `StandardScaler` aplica `z = (x − media) / desvío` usando estadísticas calculadas en entrenamiento.
+    """)
+    return
+
+
+@app.cell
+def _(partitions):
+    scale_table = partitions.x_fit.std().sort_values(ascending=False).to_frame("std")
     scale_table.head(10)
     return (scale_table,)
 
@@ -227,21 +239,21 @@ def _(features):
 @app.cell
 def _(mo):
     mo.md(r"""
-    La tabla lo confirma: los desvíos más grandes son los de `Time` y `Amount`; las componentes `V1`–`V28` están dos órdenes de magnitud por debajo. Después del escalado, todas las columnas pesan igual en distancia y en gradiente.
+    La tabla ordena las diez mayores desviaciones observadas en entrenamiento y permite comparar las escalas sin usar estadísticas de validación o prueba. No es el escalador: cada pipeline calcula su propio `StandardScaler` al ajustarse con los datos de entrenamiento y reutiliza esas estadísticas para transformar los datos posteriores.
 
     El pipeline tiene tres pasos, siempre en este orden:
 
-    1. **`StandardScaler`**: lleva las 30 variables a media 0 y desvío 1. SMOTE calcula distancias y un MLP es sensible a las escalas; estandarizar mantiene comparable el límite de preprocesamiento de la comparación.
+    1. **`StandardScaler`**: centra y escala las 30 variables con las estadísticas de entrenamiento. Esto hace comparables sus escalas para las distancias de SMOTE y la optimización del MLP.
     2. **`SMOTE(random_state=42)`**: crea fraudes sintéticos interpolando entre vecinos cercanos de la clase minoritaria. Se ajusta solo con el entrenamiento; la validación conserva la prevalencia natural (0,17 %).
     3. **Clasificador**: Random Forest (`n_estimators=200`, `random_state=42`, `n_jobs=-1`) y AdaBoost (`random_state=42`).
 
-    Todo el pipeline se ajusta **dentro** de la partición de entrenamiento. Ese orden es lo que evita la fuga: si se escalara o se aplicara SMOTE antes de dividir, información de validación y de prueba se filtraría al modelo. La validación y la prueba externa reservada mantienen su prevalencia natural.
+    Cada modelo tiene su propio pipeline y lo ajusta **solo** con la partición de entrenamiento. Ese orden evita que las estadísticas del escalador o los ejemplos sintéticos incorporen información de validación o prueba. Ambas particiones conservan su prevalencia natural.
 
-    **El escalador no se ajusta dos veces.** El `fit` se hace solo con entrenamiento; validación y prueba únicamente se transforman con ese escalador ya ajustado. Ajustar un escalador aparte con la prueba también sería una fuga: el modelo estaría usando la distribución de datos que nunca debe ver.
+    En cada pipeline, `fit` calcula el escalador con entrenamiento; validación y prueba solo se transforman con esas estadísticas. Ajustar otro escalador con la prueba también filtraría al proceso la distribución de datos reservados.
 
     **¿Qué hace SMOTE?** No copia fraudes: para cada fraude del entrenamiento busca sus vecinos más cercanos —en el espacio ya escalado— e inventa puntos intermedios entre ellos. Así la clase minoritaria crece hasta igualar a la mayoritaria. Se aplica **solo al entrenamiento**; validación y prueba conservan la prevalencia real (0,17 %) porque deben representar la realidad.
 
-    Así se ve el pipeline construido:
+    La salida siguiente es la representación de la configuración del pipeline de Random Forest: muestra sus pasos y parámetros, pero no entrena el modelo.
     """)
     return
 
@@ -255,7 +267,7 @@ def _(build_baseline_pipelines):
 @app.cell
 def _(mo):
     mo.md(r"""
-    **El efecto de SMOTE en este entrenamiento.** La tabla compara las clases antes y después de remuestrear la partición de entrenamiento del modelo (182.276 filas). El equilibrio queda en 181.962 de cada clase; la validación y la prueba no se tocan.
+    **Demostración independiente de SMOTE.** La tabla compara las clases antes y después de aplicar un escalador y una instancia demostrativa de SMOTE al subconjunto de entrenamiento: no reutiliza un objeto SMOTE ajustado dentro de los modelos. Random Forest y AdaBoost ajustan cada uno su propio escalador y sampler dentro de su pipeline. El equilibrio de la demostración queda en 181.962 filas por clase; validación y prueba no se remuestrean.
     """)
     return
 
@@ -427,7 +439,7 @@ def _(mo):
     - **Recall**: de los 79 fraudes reales (64 + 15), se detectaron 64 → `64 / 79 = 81,0 %`.
     - **Exactitud**: de las 45.569 transacciones, se clasificaron bien 45.545 (45.481 + 64) → `45.545 / 45.569 = 99,95 %`.
 
-    Los 15 fraudes que se escaparon (FN) son el costo real del modelo; las 9 falsas alarmas (FP), el ruido que genera.
+    Los 15 fraudes no detectados (FN) y las 9 falsas alarmas (FP) son tipos distintos de error. Su costo monetario u operativo no se puede cuantificar con este dataset.
 
     ### 6.5 ¿Y si el modelo no aprendiera nada?
 
@@ -435,7 +447,7 @@ def _(mo):
 
     ### 6.6 Entonces, ¿qué miramos?
 
-    La métrica principal es el **área bajo la curva precisión-recall (AUPRC)**, que aquí llamamos `Average Precision`: mide qué tan bien el modelo ordena los fraudes por encima de las legítimas, sin depender de un umbral fijo. Además, los informes usan **F2** en lugar de F1: F2 le da el doble de peso al recall, porque dejar pasar un fraude suele costar más que una falsa alarma.
+    La métrica principal es **Average Precision (AP)**: resume la curva precisión-recall como un promedio ponderado no interpolado y permite comparar el orden de los scores sin fijar un único umbral. No es el área geométrica trapezoidal exacta de la curva. Los informes también usan **F2**, que da al recall el doble de peso que a la precisión; es una elección de métrica, no una estimación de costos reales.
     """)
     return
 
@@ -445,7 +457,9 @@ def _(mo):
     mo.md(r"""
     ## Paso 7 — Entrenar y comparar los dos modelos base
 
-    El botón ajusta cada pipeline con las 182.276 filas de entrenamiento (SMOTE incluido dentro del pipeline) y predice la validación. La validación tiene prevalencia natural —79 fraudes en 45.569 filas—, así que las métricas reflejan el desbalance real, no uno inflado por el remuestreo. Al terminar se muestran la tabla de métricas y las dos matrices de confusión con los recuentos reales. En cada matriz, la **diagonal** (TN y TP) son los aciertos; fuera de la diagonal quedan los errores (FP y FN).
+    Al pulsar el botón, `run_baseline_validation` ajusta cada pipeline con `x_fit` y `y_fit`, calcula en validación los scores de `predict_proba` para Average Precision y las etiquetas de `predict` para precisión, recall, F2 y matrices de confusión. No remuestrea la validación: sus 79 fraudes en 45.569 filas conservan la prevalencia natural. La función devuelve la tabla de esas métricas y las matrices; la columna de exactitud que se añade a la vista se calcula desde las matrices solo para explicar sus aciertos, no es una métrica de selección.
+
+    Al terminar se muestran la tabla de métricas y las dos matrices de confusión con los recuentos reales. En cada matriz, la **diagonal** (TN y TP) son los aciertos; fuera de la diagonal quedan los errores (FP y FN).
     """)
     return
 
@@ -460,7 +474,7 @@ def _(mo):
 
 
 @app.cell
-def _(baseline_run_button, mo, partitions, run_baseline_validation):
+def _(baseline_run_button, mo, partitions, pd, run_baseline_validation):
     mo.stop(
         not baseline_run_button.value,
         mo.md(
@@ -474,7 +488,15 @@ def _(baseline_run_button, mo, partitions, run_baseline_validation):
         partitions.x_validation,
         partitions.y_validation,
     )
-    baseline_results
+    accuracy_by_model = {
+        model_name: (matrix[0][0] + matrix[1][1])
+        / sum(sum(row) for row in matrix)
+        for model_name, matrix in confusion_matrices.items()
+    }
+    baseline_display_results = baseline_results.assign(
+        accuracy=pd.Series(accuracy_by_model)
+    )
+    baseline_display_results
     return baseline_results, confusion_matrices
 
 
@@ -495,7 +517,7 @@ def _(mo):
     mo.md(r"""
     ## Paso 8 — Leer los resultados
 
-    La tabla traduce cada matriz a números. Observa de dónde sale cada porcentaje:
+    La tabla traduce cada matriz a números. `accuracy` es una columna de presentación calculada a partir de TN, FP, FN y TP que devuelve la evaluación; no la calcula `run_baseline_validation` ni se usa para seleccionar un modelo. Observa de dónde sale cada porcentaje:
 
     | Métrica | Random Forest | AdaBoost | Cómo se obtiene |
     | --- | --- | --- | --- |
@@ -518,26 +540,24 @@ def _(mo):
 
     **Cuidado con los nombres al leer una matriz.** `TN` es la legítima bien clasificada y `TP` el fraude detectado: la celda grande (decenas de miles) es `TN`, no `TP`. Un texto que etiquete ese número como "verdadero positivo" está invirtiendo los términos, y con eso se invierten también FP y FN. En nuestra validación: `TN = 45.481`, `FP = 9`, `FN = 15`, `TP = 64`.
 
-    ### Conclusión — ¿cuál elegimos y por qué?
+    ### Conclusión — qué muestran los resultados y qué no
 
-    Los dos modelos son efectivos por separado. La elección no es de efectividad sino del **costo de equivocarse**:
+    En esta partición de validación, Random Forest tiene mayor Average Precision, precisión y F2, y muchas menos falsas alarmas. AdaBoost detecta más fraudes, pero con una carga de alertas mucho mayor:
 
     | | Random Forest | AdaBoost |
     | --- | --- | --- |
     | Fraudes detectados | 64 de 79 (81,0 %) | 72 de 79 (91,1 %) |
     | Falsas alarmas | 9 | 1.423 |
-    | Precisión de la clase fraude | 87,7 % | 4,8 % |
+    | Precisión de la clase fraude | 87,67 % | 4,82 % |
     | Average Precision | 0,850 | 0,737 |
+    | Recall | 81,01 % | 91,14 % |
     | F2 | 0,823 | 0,199 |
 
-    - **AdaBoost** detecta 8 fraudes más, pero dispara 1.423 falsas alarmas: 95 de cada 100 alertas no son fraude. En un banco eso es una bandeja de revisión desbordada y clientes bloqueados sin motivo.
-    - **Random Forest** deja pasar 15 fraudes en lugar de 7, pero con 9 falsas alarmas sus alertas son confiables (87,7 %) y su ranking es mejor (AP 0,850).
+    AdaBoost detecta **8 fraudes más** que Random Forest (72 frente a 64), con **1.414 falsas alarmas adicionales** en esta validación (1.423 frente a 9). Random Forest ofrece el mejor balance métrico provisional de estos dos baselines; AdaBoost obtiene mayor recall junto con ese volumen de alertas.
 
-    El costo de una falsa alarma es una revisión manual; el de un fraude no detectado es su importe. En este dataset el fraude típico ronda los 9,25 € (mediana) y los 122 € de media: 1.414 alertas extra para rescatar 8 fraudes no se justifican.
+    **Conclusión condicionada:** si se priorizan AP, precisión, F2 y menos falsas alarmas en esta partición, Random Forest es el mejor balance provisional. Si se prioriza detectar más fraudes, AdaBoost alcanza mayor recall, pero su viabilidad depende de la capacidad real de revisión. No conocemos los costos institucionales de fraude y falsas alertas ni esa capacidad; además, `Amount` no equivale a la pérdida total. Por eso los resultados no demuestran que ninguno sea una opción operativa óptima para un banco. El MLP (Notebook 03) es el único modelo evaluado en la prueba reservada; esta comparación de baselines usa solo validación y no es directamente comparable con ese resultado.
 
-    **Decisión entre los modelos base**: Random Forest es el mejor equilibrio entre detección y carga operativa. AdaBoost queda como la opción de máxima cobertura —útil si el objetivo fuera no dejar pasar ningún fraude y existiera capacidad para revisar más de 1.400 alertas—, no como el modelo elegido. El modelo evaluado en la prueba reservada es el MLP (Notebook 03); esta comparación es entre los dos modelos base.
-
-    > **Para contarlo en 30 segundos:** los dos modelos sirven. AdaBoost encuentra 8 fraudes más, pero llena la bandeja con 1.423 falsas alarmas; Random Forest encuentra 64 con solo 9. Revisar una falsa alarma cuesta tiempo y un fraude perdido cuesta su importe, pero 1.414 revisiones extra no se pagan con 8 fraudes: por eso elegimos Random Forest.
+    > **Para contarlo en 30 segundos:** en esta validación, Random Forest detecta 64 de 79 fraudes con 9 falsas alarmas; AdaBoost detecta 72, pero genera 1.423. Random Forest tiene mejores AP, precisión y F2; AdaBoost, mayor recall. Sin conocer los costos reales y la capacidad de revisión, podemos describir esa compensación, pero no declarar cuál sería la mejor decisión para un banco.
 
     La comparación tiene una sola división de validación con 79 fraudes. Para estos modelos base no existe validación cruzada, ajuste de umbral ni ajuste de hiperparámetros; la prueba reservada se evaluó solo con el MLP. Consultar [el informe exacto de validación](../reports/baseline_validation.md).
     """)

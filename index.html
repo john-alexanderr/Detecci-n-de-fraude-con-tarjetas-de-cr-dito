@@ -138,7 +138,7 @@
         <p>Para entenderlo, imaginemos que un banco procesa un millón de transacciones. De todas ellas, 999.000 son legítimas y solamente 1.000 corresponden a operaciones fraudulentas. El fraude representa apenas el 0,1 % de las operaciones.</p>
         <p>Ahora imaginemos que construimos un modelo de Machine Learning con una estrategia bastante sencilla: <strong>aprobar absolutamente todas las transacciones</strong>.</p>
         <p>¿El resultado? El modelo obtiene un 99,9 % de accuracy (exactitud). A primera vista parece extraordinario. Sin embargo, acaba de cometer un error gravísimo: <strong>no detectó ni un solo fraude</strong>.</p>
-        <p>Este ejemplo demuestra por qué la exactitud puede ser una métrica engañosa cuando trabajamos con datos extremadamente desbalanceados. No alcanza con preguntarse cuántas predicciones fueron correctas: también necesitamos saber cuántos frauds conseguimos detectar y cuántas operaciones legítimas rechazamos por equivocación.</p>
+        <p>Este ejemplo demuestra por qué la exactitud puede ser una métrica engañosa cuando trabajamos con datos extremadamente desbalanceados. No alcanza con preguntarse cuántas predicciones fueron correctas: también necesitamos saber cuántos fraudes conseguimos detectar y cuántas operaciones legítimas rechazamos por equivocación.</p>
       </div>
 
       <figure class="fig reveal">
@@ -635,7 +635,7 @@
         <ol>
           <li><strong>Auditoría y EDA.</strong> Verificación de esquema, tipos, nulos, duplicados y rangos de las 30 variables: 284.807 filas, 0 nulos, 1.081 duplicados exactos (0,3796 %) y ninguna fila con variables idénticas pero etiquetas en conflicto.</li>
           <li><strong>Particiones agrupadas.</strong> Se calcula un hash solo de las variables de entrada (nunca de la etiqueta) y se usa <code>StratifiedGroupKFold</code> en dos niveles. Resultado: desarrollo 227.845 filas (393 fraudes) y test reservado 56.962 filas (99 fraudes); dentro del desarrollo, 182.276 filas de entrenamiento (314) y 45.569 de validación (79). Con el split estratificado convencional, <strong>293 firmas de variables idénticas cruzaban la frontera</strong>: esa fuga es exactamente lo que el agrupamiento elimina.</li>
-          <li><strong>Baselines sin fuga.</strong> Pipeline <code>StandardScaler → SMOTE(random_state=42) → clasificador</code>, con el escalador y el muestreo ajustados solo con entrenamiento y la validación en prevalencia natural: Random Forest y AdaBoost, evaluados sobre 45.569 filas y 79 frauds.</li>
+          <li><strong>Baselines sin fuga.</strong> Pipeline <code>StandardScaler → SMOTE(random_state=42) → clasificador</code>, con el escalador y el muestreo ajustados solo con entrenamiento y la validación en prevalencia natural: Random Forest y AdaBoost, evaluados sobre 45.569 filas y 79 fraudes.</li>
           <li><strong>Búsqueda acotada del MLP.</strong> Dos candidatos, <code>StratifiedGroupKFold(3)</code> con scoring <code>average_precision</code>, refit con todos los datos de desarrollo y <strong>una única evaluación del test externo</strong>, sin ajuste de umbral.</li>
         </ol>
       </div>
@@ -675,16 +675,16 @@
 
       <figure class="fig reveal">
         <img src="assets/site/charts/matriz-confusion.png" alt="Matriz de confusión del MLP en el test reservado: 56.830 verdaderos negativos, 33 falsos positivos, 16 falsos negativos y 83 verdaderos positivos." width="1500" height="840" loading="lazy">
-        <figcaption><b>La decisión, en números.</b> 83 de 99 frauds detectados (recall 0,8384) a costa de 33 falsos positivos sobre 56.863 operaciones legítimas. Reportamos F2 y no solo F1 porque el negocio prioriza la detección: el costo de dejar pasar un fraude no es comparable al de una alerta extra.</figcaption>
+        <figcaption><b>La decisión, en números.</b> 83 de 99 fraudes detectados (recall 0,8384) y 33 falsas alertas sobre 56.863 operaciones legítimas. F2 pondera más el recall por definición de la métrica; el proyecto no cuenta con una función de costos institucional medida ni un umbral aprobado.</figcaption>
       </figure>
 
       <figure class="fig reveal">
         <img src="assets/site/charts/baselines.png" alt="Comparación de Average Precision, precisión, recall y F2 entre Random Forest, AdaBoost y el MLP." width="1500" height="840" loading="lazy">
-        <figcaption><b>Comparación orientativa.</b> Random Forest y AdaBoost se midieron en validación (79 frauds); el MLP, en el test reservado (99 frauds). Particiones distintas: no es una evaluación común bajo el mismo protocolo.</figcaption>
+        <figcaption><b>Comparación orientativa.</b> Random Forest y AdaBoost se midieron en validación (79 fraudes); el MLP, en el test reservado (99 fraudes). Particiones distintas: no es una evaluación común bajo el mismo protocolo.</figcaption>
       </figure>
 
       <div class="prose reveal">
-        <p><strong>Y lo que todavía no podemos afirmar.</strong> El holdout contiene 99 frauds: es una estimación incierta, no rendimiento de producción. Ningún modelo está aprobado para decisiones de pago. No ajustamos umbrales, no hay función de costo, no hay validación cruzada para los árboles, la búsqueda del MLP fue acotada a dos candidatos y no exhaustiva, y el dataset cubre apenas dos días de 2013. La ventana temporal no se puede reutilizar para iterar: el test externo se evaluó una vez y debe seguir reservada.</p>
+        <p><strong>Y lo que todavía no podemos afirmar.</strong> El holdout contiene 99 fraudes: es una estimación incierta, no rendimiento de producción. Ningún modelo está aprobado para decisiones de pago. No ajustamos umbrales, no hay función de costo, no hay validación cruzada para los árboles, la búsqueda del MLP fue acotada a dos candidatos y no exhaustiva, y el dataset cubre apenas dos días de 2013. La ventana temporal no se puede reutilizar para iterar: el test externo se evaluó una vez y debe seguir reservada.</p>
         <p>El trabajo futuro que el propio proyecto deja abierto es concreto: validar los árboles con validación cruzada, diseñar una comparación justa entre particiones, ajustar umbrales solo con datos de desarrollo y obtener un conjunto de datos posterior para poder hablar de deriva con evidencia en lugar de con teoría.</p>
       </div>
 
