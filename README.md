@@ -127,7 +127,7 @@ marimo edit notebooks/03_mlp_training_evaluation.py
 
 ```text
 docs/                 Marco de negocio, datos, arquitectura, metodología y model card
-data/raw/             CSV local de Kaggle (ignorado); .gitkeep mantiene la carpeta
+data/raw/             CSV local de Kaggle (aclaracion); .gitkeep mantiene la carpeta
 notebooks/            Tres apps Marimo: EDA, baselines y MLP
 reports/              Evidencia de EDA, validación de baselines y evaluación MLP
 src/fraud_detection/  Carga de datos, splits agrupados, pipelines, gráficos y métricas
