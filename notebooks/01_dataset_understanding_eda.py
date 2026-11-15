@@ -136,6 +136,36 @@ def _(df):
 
 
 @app.cell
+def _(mo):
+    mo.md(r"""
+    ### Estadísticas resumen del importe (`Amount`)
+
+    `describe()` resume una columna numérica en ocho valores. Es una forma rápida de entender escala, dispersión y valores extremos antes de modelar:
+
+    - `count`: filas con un valor presente (no cuenta nulos).
+    - `mean`: promedio; se desplaza con facilidad si hay valores extremos.
+    - `std`: desviación estándar; mide cuánto se dispersan los valores alrededor del promedio.
+    - `min` y `max`: valores extremos observados.
+    - `25%`, `50%` y `75%`: cuartiles. El `50%` es la mediana: la mitad de las transacciones queda por debajo.
+    """)
+    return
+
+
+@app.cell
+def _(df):
+    df["Amount"].describe()
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    La columna tiene 284,807 valores registrados, sin nulos. La media (`88.35`) es casi cuatro veces la mediana (`22.00`), y la desviación estándar (`250.12`) supera largamente a la media. Eso indica una distribución **muy sesgada a la derecha**: la mayoría de las transacciones son de importe bajo (el 50% no supera `22.00`), mientras unas pocas muy grandes empujan el promedio y el máximo (`25,691.16`). Por eso el análisis visual del importe usa la escala `log1p`, que comprime los valores grandes sin modificar los originales.
+    """)
+    return
+
+
+@app.cell
 def _(df):
     df["Class"].value_counts().rename("transactions").to_frame()
     return
