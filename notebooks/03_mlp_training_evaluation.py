@@ -27,30 +27,69 @@ def _():
 @app.cell
 def _(mo):
     mo.md(r"""
-    # 03 — Validación cruzada agrupada del MLP y evaluación final
+    # 03 — Entrenamiento del MLP: validación cruzada y prueba final
 
-    La validación cruzada documentada del MLP, el entrenamiento y reajuste con los datos de desarrollo y una evaluación final en la prueba reservada ya están completos. Abrir esta aplicación no carga el CSV, no inicia una búsqueda, no ajusta un modelo ni evalúa la prueba reservada. El botón de abajo repetiría la búsqueda y volvería a evaluar la prueba reservada; no usarlo para seguir iterando. Revisar los resultados registrados y el límite de la evaluación que aparecen abajo.
+    Este notebook muestra cómo se entrena y elige el MLP, paso a paso. Todo el proceso ya está completado y registrado: abrir la aplicación no carga el CSV, no entrena ni evalúa nada. El botón repite la búsqueda y volvería a evaluar la prueba reservada: **no usarlo para seguir iterando**.
 
-    ## ¿Por qué un MLP, escalado y SMOTE?
+    ## Paso 1 — Separar el desarrollo de la prueba reservada
 
-    Las 30 variables de entrada numéricas tienen escalas muy distintas, y un MLP es sensible a la escala de las variables. Por eso el pipeline aplica **`StandardScaler -> SMOTE(random_state=42) -> MLPClassifier`**. El pipeline de imbalanced-learn está dentro de la validación cruzada, así que el escalado y el remuestreo se ajustan solo con los datos de entrenamiento de cada fold; cada fold de validación mantiene la prevalencia natural. La parada temprana está desactivada porque su división de validación interna se tomaría de los datos de entrenamiento posteriores a SMOTE.
+    La búsqueda usa solo el desarrollo agrupado —entrenamiento + validación, 227.845 filas con 393 fraudes—. La prueba externa (56.962 filas, 99 fraudes) queda fuera y se evalúa una sola vez al final.
 
-    ## Búsqueda agrupada acotada
+    ## Paso 2 — Validar con folds agrupados
 
-    Las particiones internas de entrenamiento del modelo y validación se combinan como datos de desarrollo; la prueba externa reservada no se incluye. La búsqueda con `StratifiedGroupKFold(n_splits=3, shuffle=True, random_state=44)` recibe los identificadores de grupo de desarrollo, lo que mantiene juntos los duplicados exactos de variables. Tres folds ofrecen una estimación inicial práctica con 393 fraudes de desarrollo; no hacen que el resultado sea exhaustivo.
+    `StratifiedGroupKFold(n_splits=3, shuffle=True, random_state=44)` reparte el desarrollo en tres folds. Los duplicados exactos de variables quedan siempre juntos y cada fold conserva una proporción similar de fraudes. Tres folds con 393 fraudes dan una estimación inicial práctica, no un resultado exhaustivo.
 
-    Los dos candidatos difieren en el tamaño de la red y la regularización L2:
+    ## Paso 3 — Comparar dos candidatos
 
     | Candidato | Capas ocultas | `alpha` | `learning_rate_init` |
     | --- | --- | ---: | ---: |
     | 1 | `(32,)` | `1e-3` | `1e-3` |
     | 2 | `(64, 32)` | `1e-4` | `1e-3` |
 
-    Ambos usan ReLU, Adam, tamaño de lote 256, `max_iter=100`, `early_stopping=False` y semilla 42. La selección de la búsqueda usa el Average Precision medio de los folds. Esta es una **búsqueda inicial acotada**, no un óptimo exhaustivo.
+    Ambos usan ReLU, Adam, tamaño de lote 256, `max_iter=100`, `early_stopping=False` y semilla 42. El pipeline es el mismo en los dos: `StandardScaler → SMOTE → MLPClassifier`, ajustado dentro de cada fold. La parada temprana está desactivada porque su validación interna se tomaría de los datos ya remuestreados por SMOTE.
 
-    ## Límite de la prueba final
+    Así se construye el pipeline con el candidato ganador:
 
-    Después de la validación cruzada, `GridSearchCV(refit=True)` ajusta el pipeline seleccionado con todas las filas de desarrollo. Luego, la prueba externa se evalúa una sola vez y nunca se usa para seleccionar parámetros ni ajustar un umbral. Average Precision usa `predict_proba`; la precisión, el recall (exhaustividad), la métrica F2 y los recuentos de la matriz de confusión usan las etiquetas por defecto de `predict` del estimador. La prueba contiene 56,962 filas y solo 99 fraudes, así que sus métricas son una única estimación final sobre datos reservados, no una prueba del rendimiento en producción.
+    ```python
+    Pipeline([
+        ("scaler", StandardScaler()),
+        ("smote", SMOTE(random_state=42)),
+        ("classifier", MLPClassifier(
+            hidden_layer_sizes=(64, 32),
+            alpha=1e-4,
+            learning_rate_init=1e-3,
+            activation="relu",
+            solver="adam",
+            batch_size=256,
+            max_iter=100,
+            early_stopping=False,
+            random_state=42,
+        )),
+    ])
+    ```
+
+    ## Paso 4 — Elegir por Average Precision
+
+    La selección usa el Average Precision medio de los tres folds. Esta métrica resume la curva precisión-recall y castiga que los fraudes queden abajo en el ranking de probabilidad. Es una **búsqueda inicial acotada**, no un óptimo exhaustivo.
+
+    ## Paso 5 — Reajustar y evaluar la prueba una sola vez
+
+    `GridSearchCV(refit=True)` reajusta el pipeline ganador con todas las filas de desarrollo. Luego, la prueba externa se evalúa una única vez y nunca se usa para seleccionar parámetros ni ajustar un umbral. Average Precision usa `predict_proba`; la precisión, el recall, la métrica F2 y la matriz de confusión usan las etiquetas por defecto de `predict`. La prueba contiene 56.962 filas y solo 99 fraudes, así que sus métricas son una única estimación final sobre datos reservados, no una prueba del rendimiento en producción.
+    """)
+    return
+
+
+@app.cell
+def _(mo):
+    mo.mermaid("""
+    flowchart TD
+        A["Desarrollo: 227.845 filas · 393 fraudes"] --> B["StratifiedGroupKFold · 3 folds"]
+        B --> C["Candidato 1: capas (32,)"]
+        B --> D["Candidato 2: capas (64, 32)"]
+        C --> E["Average Precision media de los folds"]
+        D --> E
+        E --> F["Reajuste con todo el desarrollo"]
+        F --> G["Prueba reservada: una sola evaluación"]
     """)
     return
 
@@ -97,7 +136,9 @@ def _(
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## Resultados de la búsqueda
+    ## Resultados de la validación cruzada
+
+    La tabla compara los dos candidatos: la columna `selected` marca el elegido y `mean_cv_average_precision` promedia el Average Precision de los tres folds.
     """)
     return
 
@@ -153,7 +194,7 @@ def _(mlp_search_result, pd):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## Una evaluación final en la prueba reservada
+    ## Resultados en la prueba reservada
     """)
     return
 
@@ -203,6 +244,14 @@ def _(mlp_test_result):
 def _(mo):
     mo.md(r"""
     ## Guía de interpretación
+
+    Cómo leer las métricas:
+
+    - **Average Precision (AP)**: área bajo la curva precisión-recall; mide qué tan bien ordena el modelo los fraudes por encima de las legítimas.
+    - **Precisión**: de las alertas que marcó el modelo, qué fracción era fraude real.
+    - **Recall (exhaustividad)**: de todos los fraudes reales, qué fracción fue detectada.
+    - **F2**: combina precisión y recall dando el doble de peso al recall.
+    - **Matriz de confusión**: TN y TP son aciertos, FP son falsas alarmas y FN son fraudes no detectados.
 
     La búsqueda completada con tres folds seleccionó el candidato 2, `(64, 32)` con `alpha=0.0001` y `learning_rate_init=0.001`, con un Average Precision medio de validación cruzada de `0.7892942255438676` y una desviación estándar de `0.024821041864665654`. El candidato 1, `(32,)` con `alpha=0.001`, obtuvo una media de `0.7889909900343617` y una desviación estándar de `0.016266031474164548`. El candidato 2 gana la búsqueda, pero su ventaja media es mínima frente a la variación entre folds y no demuestra una superioridad decisiva de la arquitectura.
 
