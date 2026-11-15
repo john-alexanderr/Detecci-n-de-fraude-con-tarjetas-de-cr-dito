@@ -176,6 +176,34 @@ def _(df):
 
 
 @app.cell
+def _(df):
+    df.query("Class == 1")["Amount"].describe()
+    return
+
+
+@app.cell
+def _(df, mo):
+    _fraud_amounts = df.query("Class == 1")["Amount"].describe()
+    _total_text = f"{len(df):,}".replace(",", ".")
+    _fraud_count_text = f"{int(_fraud_amounts['count']):,}".replace(",", ".")
+    _mean_text = (
+        f"{_fraud_amounts['mean']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    )
+    _median_text = (
+        f"{_fraud_amounts['50%']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    )
+    _max_text = (
+        f"{_fraud_amounts['max']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    )
+    mo.md(f"""
+    ### Importe de las transacciones fraudulentas
+
+    Al filtrar solo las operaciones con `Class == 1` quedan **{_fraud_count_text}** transacciones fraudulentas de **{_total_text}** totales. Su importe medio es **{_mean_text} €**, pero la mediana es de apenas **{_median_text} €**: la mayoría de los fraudes son de importe bajo y unos pocos elevan el promedio. El importe máximo de una transacción fraudulenta es **{_max_text} €**.
+    """)
+    return
+
+
+@app.cell
 def _(mo):
     mo.md(r"""
     ### Interpretación del inventario de la fuente
