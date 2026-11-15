@@ -16,9 +16,13 @@ def _():
         create_grouped_partitions,
         grouped_overlap_count,
     )
+    from imblearn.over_sampling import SMOTE
+    from sklearn.preprocessing import StandardScaler
 
     return (
         FEATURE_COLUMNS,
+        SMOTE,
+        StandardScaler,
         build_baseline_pipelines,
         create_grouped_partitions,
         grouped_overlap_count,
@@ -221,6 +225,10 @@ def _(mo):
 
     Todo el pipeline se ajusta **dentro** de la partición de entrenamiento. Ese orden es lo que evita la fuga: si se escalara o se aplicara SMOTE antes de dividir, información de validación y de prueba se filtraría al modelo. La validación y la prueba externa reservada mantienen su prevalencia natural.
 
+    **El escalador no se ajusta dos veces.** El `fit` se hace solo con entrenamiento; validación y prueba únicamente se transforman con ese escalador ya ajustado. Ajustar un escalador aparte con la prueba también sería una fuga: el modelo estaría usando la distribución de datos que nunca debe ver.
+
+    **¿Qué hace SMOTE?** No copia fraudes: para cada fraude del entrenamiento busca sus vecinos más cercanos —en el espacio ya escalado— e inventa puntos intermedios entre ellos. Así la clase minoritaria crece hasta igualar a la mayoritaria. Se aplica **solo al entrenamiento**; validación y prueba conservan la prevalencia real (0,17 %) porque deben representar la realidad.
+
     Así se ve el pipeline construido:
     """)
     return
@@ -230,6 +238,31 @@ def _(mo):
 def _(build_baseline_pipelines):
     build_baseline_pipelines()["Random Forest"]
     return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    **El efecto de SMOTE en este entrenamiento.** La tabla compara las clases antes y después de remuestrear la partición de entrenamiento del modelo (182.276 filas). El equilibrio queda en 181.962 de cada clase; la validación y la prueba no se tocan.
+    """)
+    return
+
+
+@app.cell
+def _(SMOTE, StandardScaler, partitions, pd):
+    scaled_fit = StandardScaler().fit_transform(partitions.x_fit)
+    _, smote_demo_target = SMOTE(random_state=42).fit_resample(
+        scaled_fit, partitions.y_fit
+    )
+    smote_effect = pd.DataFrame(
+        {
+            "antes": partitions.y_fit.value_counts().sort_index().to_numpy(),
+            "después": smote_demo_target.value_counts().sort_index().to_numpy(),
+        },
+        index=["legítima (0)", "fraude (1)"],
+    )
+    smote_effect
+    return (smote_effect,)
 
 
 @app.cell
@@ -280,6 +313,8 @@ def _(baseline_run_button, mo, partitions, pd, run_baseline_validation):
 def _(mo):
     mo.md(r"""
     ## Paso 5 — Leer los resultados
+
+    **¿Por qué Average Precision y no exactitud?** Con 0,17 % de fraudes, la exactitud engaña: un modelo que responda siempre "legítima" acierta el 99,8 % y no detecta nada. El área bajo la curva precisión-recall (AUPRC) —nuestro `Average Precision`— resume qué tan bien se ordenan los fraudes por encima de las legítimas, sin depender de un umbral fijo.
 
     Cómo leer las métricas que aparecen arriba:
 
