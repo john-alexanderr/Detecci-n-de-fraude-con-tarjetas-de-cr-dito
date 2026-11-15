@@ -233,7 +233,7 @@ def _(mo):
     mo.md(r"""
     ### EDA parte 1 — Distribuciones univariadas
 
-    Los gráficos usan solo la partición de desarrollo agrupada. Las diferencias de distribución por sí solas no demuestran valor predictivo.
+    Los gráficos usan solo la partición de desarrollo agrupada, salvo la proporción de clases, que describe el dataset completo. Las diferencias de distribución por sí solas no demuestran valor predictivo.
     """)
     return
 
@@ -273,20 +273,30 @@ def _(development_df, plot_amount_by_transaction):
 
 
 @app.cell
-def _(mo):
-    mo.md(r"""
+def _(df, mo):
+    class_counts = df["Class"].value_counts()
+    total = len(df)
+    fraud_count = int(class_counts[1])
+    legit_count = int(class_counts[0])
+    fraud_rate = fraud_count / total * 100
+    legit_rate = legit_count / total * 100
+    fraud_text = f"{fraud_count:,}".replace(",", ".")
+    total_text = f"{total:,}".replace(",", ".")
+    fraud_rate_text = f"{fraud_rate:.3f}".replace(".", ",")
+    legit_rate_text = f"{legit_rate:.1f}".replace(".", ",")
+    mo.md(f"""
     ### Proporción entre clases
 
-    No es de extrañar que apenas pudiéramos ver los puntos amarillos en el diagrama de dispersión de arriba, ya que solo el **0,173 %** de las transacciones son fraudulentas. Pero en absoluto es una cantidad insignificante.
+    No es de extrañar que apenas pudiéramos ver los puntos amarillos en el diagrama de dispersión de arriba, ya que solo el **{fraud_rate_text} %** de las transacciones del dataset son fraudulentas ({fraud_text} de {total_text}). Pero en absoluto es una cantidad insignificante.
 
-    El gráfico de torta hace visible esa proporción. Por eso la exactitud (_accuracy_) sola no sirve como métrica: un modelo que clasifique todo como legítimo acertaría casi el 100 % y no detectaría ningún fraude.
+    El gráfico de torta hace visible esa proporción. Por eso la exactitud (_accuracy_) sola no sirve como métrica: un modelo que clasifique todo como legítimo acertaría el **{legit_rate_text} %** y no detectaría ningún fraude.
     """)
     return
 
 
 @app.cell
-def _(development_df, plot_class_share):
-    plot_class_share(development_df)
+def _(df, plot_class_share):
+    plot_class_share(df)
     return
 
 

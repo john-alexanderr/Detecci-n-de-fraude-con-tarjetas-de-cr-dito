@@ -30,7 +30,11 @@ def plot_class_share(frame: pd.DataFrame):
     axis.pie(
         counts,
         colors=["#5b5bd6", "#e4572e"],
-        autopct=lambda pct: f"{pct:.1f}%" if pct >= 1 else f"{pct:.3f}%",
+        autopct=lambda pct: (
+            f"{pct:.1f}%".replace(".", ",")
+            if pct >= 1
+            else f"{pct:.3f}%".replace(".", ",")
+        ),
         startangle=90,
         counterclock=False,
         pctdistance=1.06,
