@@ -13,6 +13,7 @@ def _():
     from fraud_detection.splitting import create_grouped_partitions
     from fraud_detection.plots import (
         plot_amount_by_class,
+        plot_amount_by_transaction,
         plot_amount_distribution,
         plot_class_prevalence,
         plot_correlation_heatmap,
@@ -32,6 +33,7 @@ def _():
         pd,
         create_grouped_partitions,
         plot_amount_by_class,
+        plot_amount_by_transaction,
         plot_amount_distribution,
         plot_class_prevalence,
         plot_correlation_heatmap,
@@ -247,6 +249,22 @@ def _(development_df, mo, plot_amount_distribution):
         "los valores de origen no cambian."
     )
     plot_amount_distribution(development_df)
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    ### Dispersión del importe según la transacción
+
+    Cada punto es una transacción: el eje horizontal muestra su importe real (sin `log1p`, para ver el rango completo) y el eje vertical su posición original en el archivo. El color indica la clase: 0 = legítima, 1 = fraude. La mayoría de las transacciones se concentra en importes bajos, mientras unos pocos valores altos quedan aislados a la derecha.
+    """)
+    return
+
+
+@app.cell
+def _(development_df, plot_amount_by_transaction):
+    plot_amount_by_transaction(development_df)
     return
 
 

@@ -47,6 +47,29 @@ def plot_amount_distribution(frame: pd.DataFrame):
     return fig
 
 
+def plot_amount_by_transaction(frame: pd.DataFrame):
+    fig, axis = plt.subplots(figsize=(11, 5))
+    points = axis.scatter(
+        frame["Amount"],
+        frame.index,
+        c=frame["Class"],
+        cmap="plasma",
+        s=8,
+        alpha=0.7,
+        linewidths=0,
+        rasterized=True,
+    )
+    colorbar = fig.colorbar(points, ax=axis)
+    colorbar.set_label("Class (0 = legítima, 1 = fraude)")
+    axis.set(
+        title="Distribución del importe de las transacciones",
+        xlabel="Importe de la transacción (Amount)",
+        ylabel="Índice de transacción",
+    )
+    fig.tight_layout()
+    return fig
+
+
 def plot_pca_marginals(frame: pd.DataFrame):
     components = [f"V{index}" for index in range(1, 29)]
     figure, axes = plt.subplots(4, 7, figsize=(18, 12))
