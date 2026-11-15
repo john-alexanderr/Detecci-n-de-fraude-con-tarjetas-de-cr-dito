@@ -1,4 +1,4 @@
-.PHONY: install test eda baselines
+.PHONY: install test eda baselines pages
 
 install:
 	python3 -m pip install -e '.[dev]'
@@ -11,3 +11,6 @@ eda:
 
 baselines:
 	marimo edit notebooks/02_data_preparation_baselines.py
+
+pages:
+	bash scripts/publish_pages.sh
