@@ -518,6 +518,27 @@ def _(mo):
 
     **Cuidado con los nombres al leer una matriz.** `TN` es la legítima bien clasificada y `TP` el fraude detectado: la celda grande (decenas de miles) es `TN`, no `TP`. Un texto que etiquete ese número como "verdadero positivo" está invirtiendo los términos, y con eso se invierten también FP y FN. En nuestra validación: `TN = 45.481`, `FP = 9`, `FN = 15`, `TP = 64`.
 
+    ### Conclusión — ¿cuál elegimos y por qué?
+
+    Los dos modelos son efectivos por separado. La elección no es de efectividad sino del **costo de equivocarse**:
+
+    | | Random Forest | AdaBoost |
+    | --- | --- | --- |
+    | Fraudes detectados | 64 de 79 (81,0 %) | 72 de 79 (91,1 %) |
+    | Falsas alarmas | 9 | 1.423 |
+    | Precisión de la clase fraude | 87,7 % | 4,8 % |
+    | Average Precision | 0,850 | 0,737 |
+    | F2 | 0,823 | 0,199 |
+
+    - **AdaBoost** detecta 8 fraudes más, pero dispara 1.423 falsas alarmas: 95 de cada 100 alertas no son fraude. En un banco eso es una bandeja de revisión desbordada y clientes bloqueados sin motivo.
+    - **Random Forest** deja pasar 15 fraudes en lugar de 7, pero con 9 falsas alarmas sus alertas son confiables (87,7 %) y su ranking es mejor (AP 0,850).
+
+    El costo de una falsa alarma es una revisión manual; el de un fraude no detectado es su importe. En este dataset el fraude típico ronda los 9,25 € (mediana) y los 122 € de media: 1.414 alertas extra para rescatar 8 fraudes no se justifican.
+
+    **Decisión entre los modelos base**: Random Forest es el mejor equilibrio entre detección y carga operativa. AdaBoost queda como la opción de máxima cobertura —útil si el objetivo fuera no dejar pasar ningún fraude y existiera capacidad para revisar más de 1.400 alertas—, no como el modelo elegido. El modelo evaluado en la prueba reservada es el MLP (Notebook 03); esta comparación es entre los dos modelos base.
+
+    > **Para contarlo en 30 segundos:** los dos modelos sirven. AdaBoost encuentra 8 fraudes más, pero llena la bandeja con 1.423 falsas alarmas; Random Forest encuentra 64 con solo 9. Revisar una falsa alarma cuesta tiempo y un fraude perdido cuesta su importe, pero 1.414 revisiones extra no se pagan con 8 fraudes: por eso elegimos Random Forest.
+
     La comparación tiene una sola división de validación con 79 fraudes. Para estos modelos base no existe validación cruzada, ajuste de umbral ni ajuste de hiperparámetros; la prueba reservada se evaluó solo con el MLP. Consultar [el informe exacto de validación](../reports/baseline_validation.md).
     """)
     return
