@@ -245,22 +245,6 @@ def _(development_df, plot_class_prevalence):
 
 
 @app.cell
-def _(mo):
-    mo.md(r"""
-    ### Proporción entre clases
-
-    El gráfico de torta muestra qué porcentaje del total representa cada clase. La porción de fraude es casi invisible: ronda el **0,17 %** de las transacciones, mientras que alrededor del **99,8 %** son legítimas. Por eso la exactitud (_accuracy_) sola no sirve como métrica: un modelo que clasifique todo como legítimo acertaría casi el 100 % y no detectaría ningún fraude.
-    """)
-    return
-
-
-@app.cell
-def _(development_df, plot_class_share):
-    plot_class_share(development_df)
-    return
-
-
-@app.cell
 def _(development_df, mo, plot_amount_distribution):
     mo.md(
         "El eje `log1p` solo comprime la visualización de la partición de desarrollo; "
@@ -285,6 +269,24 @@ def _(mo):
 @app.cell
 def _(development_df, plot_amount_by_transaction):
     plot_amount_by_transaction(development_df)
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    ### Proporción entre clases
+
+    No es de extrañar que apenas pudiéramos ver los puntos amarillos en el diagrama de dispersión de arriba, ya que solo el **0,173 %** de las transacciones son fraudulentas. Pero en absoluto es una cantidad insignificante.
+
+    El gráfico de torta hace visible esa proporción. Por eso la exactitud (_accuracy_) sola no sirve como métrica: un modelo que clasifique todo como legítimo acertaría casi el 100 % y no detectaría ningún fraude.
+    """)
+    return
+
+
+@app.cell
+def _(development_df, plot_class_share):
+    plot_class_share(development_df)
     return
 
 
