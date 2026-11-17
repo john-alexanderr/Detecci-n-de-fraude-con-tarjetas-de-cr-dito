@@ -152,4 +152,4 @@ tests/                Tests livianos con datos sintéticos; sin descargas ni ent
 - [Arquitectura](docs/architecture.md)
 - [Metodología](docs/methodology.md)
 - [Model card](docs/model_card.md)
-- exposicion (https://youtu.be/x0cJ6IxBij4) (https://youtu.be/jTJ_yGVqG8M) (https://youtu.be/Mvp3sT7WDUo)
+- exposicion de video dividido en 3 (https://youtu.be/x0cJ6IxBij4) (https://youtu.be/jTJ_yGVqG8M) (https://youtu.be/Mvp3sT7WDUo)
